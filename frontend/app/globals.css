@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7fbff;
+  --foreground: #17345d;
 }
 
 @theme inline {
@@ -12,15 +12,26 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.hero-grid {
+  background: radial-gradient(circle at 80% 20%, rgba(255, 221, 129, 0.5), transparent 28%), linear-gradient(135deg, #eaf9f8 0%, #f7fbff 58%, #fff6dc 100%);
+}
+
+.hero-grid::after {
+  content: "";
+  position: absolute;
+  inset: auto -5% -9rem;
+  height: 14rem;
+  border-radius: 50% 50% 0 0;
+  background: #f7fbff;
+  transform: rotate(-2deg);
 }
