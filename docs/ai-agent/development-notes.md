@@ -75,3 +75,53 @@ Notes:
 - Added a character-led Kibo companion section reusing the existing CSS illustration.
 - Restyled the final CTA as a bold adventure signpost while preserving its `/login` destination.
 - Validation after refinement: `npm.cmd run lint` and `npm.cmd run build`.
+
+### 2026-10-06
+
+#### Task: Login Page
+
+Status: Completed
+
+Objective:
+- Add the `/login` experience as the entry point to the EduVerse learning adventure.
+- Keep authentication as a frontend placeholder while preserving the landing page and backend.
+
+Files changed:
+- `frontend/app/login/page.tsx`
+- `frontend/components/LoginPage.tsx`
+- `docs/ai-agent/development-notes.md`
+
+Design decisions:
+- Reused the landing page's navy, teal, yellow-orange, cream, rounded border, shadow, and CSS illustration language.
+- Added a responsive visual/form split that stacks on smaller screens.
+- Added accessible labels, focus states, password visibility control, and a Google placeholder message.
+- The email/password submit flow navigates to `/dashboard` without implementing authentication.
+
+Validation:
+- `npm.cmd run lint` passed.
+- `npm.cmd run build` passed; `/login` was statically generated successfully.
+- Browser interaction testing was not available in the current tool environment; the form, password toggle, Google placeholder, and route links were verified by implementation and build/type validation.
+
+### 2026-10-06
+
+#### Task: Register Page
+
+Status: Completed
+
+Objective:
+- Add the `/register` frontend-only registration experience as a continuation of `/login`.
+
+Files changed:
+- `frontend/app/register/page.tsx`
+- `frontend/components/RegisterPage.tsx`
+- `docs/ai-agent/development-notes.md`
+
+Design decisions:
+- Matched the Login page's split card, Kibo CSS illustration, colors, typography, borders, shadows, spacing, and responsive stacking.
+- Added accessible labels and focus states, two password visibility toggles, friendly client-side validation, and a Google placeholder message.
+- Valid submissions navigate to `/login`; no account or authentication state is persisted.
+
+Validation:
+- `npm.cmd run lint` completed with one pre-existing warning in `frontend/components/LoginPage.tsx` for its existing `window.location.href` navigation; no Register page lint warnings remain.
+- `npm.cmd run build` passed; `/register` was statically generated successfully.
+- Browser interaction testing was not available in the current tool environment; validation behavior and links were verified by implementation and lint/build checks.
