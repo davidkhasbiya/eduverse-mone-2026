@@ -2378,11 +2378,11 @@ Do not claim anything that was not actually implemented or tested.
 
 Implemented the Result / Reward MVP flow.
 Changes:
-- Updated [play/page.tsx](E:/Lomba Hackathon/M-One Telkomsel Coding Competition 2026/eduverse-mone-2026/frontend/app/(authenticated\)/quest/[slug]/play/page.tsx)
+- Updated [play/page.tsx]
   - Added mock activity screen
   - Added “Selesaikan Quest / Lihat Hasil” CTA
   - Navigates to /result/[slug]
-- Added [result/[slug\]/page.tsx](E:/Lomba Hackathon/M-One Telkomsel Coding Competition 2026/eduverse-mone-2026/frontend/app/(authenticated\)/result/[slug]/page.tsx)
+- Added [result/page.tsx]
   - Quest completion state
   - Quest title/category from centralized data
   - Mock score: 80 / 100
@@ -2694,7 +2694,7 @@ Do not claim anything that was not actually implemented or tested.
 
 Implemented the Progress/Profile page.
 - Added route: /progress
-- Added [ProgressPage.tsx](E:/Lomba Hackathon/M-One Telkomsel Coding Competition 2026/eduverse-mone-2026/frontend/components/ProgressPage.tsx)
+- Added [ProgressPage.tsx]
 - Added authenticated route page
 - Reused centralized student and quests mock data
 - Reused existing Sidebar via authenticated layout
