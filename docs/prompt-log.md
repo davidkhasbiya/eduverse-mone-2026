@@ -903,18 +903,830 @@ Validation:
 - /register generated successfully.
 Browser interaction testing was unavailable in the current environment.
 
-### Prompt 05 — Register Page
+### Prompt 05 — Dashboard Page
 
 Status: Planned
 
 Prompt:
+We are continuing development of EduVerse.
 
+Implement ONLY the Dashboard Page for this task.
+
+IMPORTANT:
+- Do not redesign the completed Landing Page.
+- Do not redesign the completed Login Page.
+- Do not redesign the completed Register Page.
+- Do not modify the backend.
+- Do not implement Supabase/database integration yet.
+- Do not implement real XP persistence yet.
+- Do not implement the actual quest system yet.
+- Do not implement Math Kingdom page yet.
+- Do not implement Result/Reward or Profile pages yet.
+- Do not add unnecessary dependencies.
+
+The Dashboard should become the student's main home/base after logging in.
+
+## PROJECT CONTEXT
+
+EduVerse — "Your Learning Adventure"
+
+Target users:
+- Elementary school students (SD), especially grades 4–6.
+
+Main learning world:
+- Math Kingdom
+
+Main quests:
+- The Missing Numbers
+- The Pizza Problem
+- The Unknown X
+
+Kibo:
+- Friendly AI learning companion
+- Helps students during their learning adventure
+
+Existing approved visual identity:
+- Modern 2D cartoon/chibi adventure style
+- Navy + cream + light blue + warm yellow/orange palette
+- Playful and colorful
+- Polished, not overly childish
+- Adventure/game atmosphere
+- Kibo is an important visual character
+- Avoid generic AI/SaaS dashboard aesthetics
+
+## DASHBOARD PURPOSE
+
+The Dashboard should feel like:
+
+"The student's home base before starting an adventure."
+
+It should immediately answer:
+
+1. Who am I?
+2. How much XP/progress do I have?
+3. What should I do next?
+4. How do I enter Math Kingdom?
+5. How can Kibo help me?
+
+Do not make it feel like an analytics/admin dashboard.
+
+## PAGE STRUCTURE
+
+### 1. TOP NAVIGATION
+
+Create a clean dashboard navigation/header.
+
+Left:
+- EduVerse logo/wordmark
+
+Right:
+- XP indicator
+- Profile/avatar area
+- Student name
+
+Example:
+"120 XP"
+
+Use a playful but compact presentation.
+
+Do not create a complex navigation menu.
+
+If the existing project has reusable branding components, reuse them.
+
+## 2. WELCOME HERO
+
+Create a friendly welcome section.
+
+Example:
+
+"Selamat datang kembali! 👋"
+
+Supporting text:
+
+"Siap melanjutkan petualangan belajarmu?"
+
+Include Kibo prominently.
+
+Kibo should feel like a companion rather than a generic decoration.
+
+Add a small motivational message from Kibo, for example:
+
+"Yuk, kita lanjutkan petualangan hari ini!"
+
+Keep the message concise.
+
+## 3. CURRENT ADVENTURE / MAIN ACTION
+
+This should be the most important section of the Dashboard.
+
+Create a large Math Kingdom adventure card/area.
+
+Heading:
+
+"Math Kingdom"
+
+Supporting text:
+
+"Jelajahi kerajaan matematika dan selesaikan quest untuk mendapatkan XP."
+
+Show:
+- Adventure/world visual
+- Kibo or a small supporting visual if appropriate
+- Progress indicator
+- Primary CTA:
+
+"Jelajahi Math Kingdom"
+
+This CTA should navigate to:
+
+`/math-kingdom`
+
+The `/math-kingdom` page does not need to be implemented yet.
+
+Do NOT make this look like a generic rectangular SaaS card.
+
+Make it feel like an entry point into a game world.
+
+## 4. PROGRESS SUMMARY
+
+Show a compact progress summary.
+
+Use mock/static data for now.
+
+Example:
+
+XP
+120 / 500
+
+Quest
+2 / 3
+
+Progress
+65%
+
+The data is temporary frontend data.
+
+Do not connect to a database yet.
+
+Make the presentation visually engaging and easy for an elementary student to understand.
+
+Avoid charts or complicated analytics.
+
+## 5. QUEST PREVIEW
+
+Show the three Math Kingdom quests as a small preview:
+
+1. The Missing Numbers
+   Arithmetic / missing numbers
+
+2. The Pizza Problem
+   Fractions
+
+3. The Unknown X
+   Patterns / introductory algebra
+
+These are previews only.
+
+Do not implement the actual quest functionality in this task.
+
+You may show status such as:
+- Completed
+- In Progress
+- Locked
+
+Use simple static/mock states.
+
+If a quest is clickable, it may navigate to `/quest`.
+
+Do not implement the Quest Detail page yet.
+
+## 6. KIBO TIP
+
+Create a small Kibo learning tip section.
+
+Example:
+
+"Kibo's Tip"
+
+"Kalau menemukan soal yang sulit, jangan buru-buru menyerah. Coba pecah soalnya menjadi langkah-langkah kecil!"
+
+The section should feel like part of the world, not like an AI chatbot panel.
+
+Do not create a full chat interface yet.
+
+## 7. PROFILE / PROGRESS ENTRY
+
+Include a simple way for the student to access their progress/profile.
+
+Example:
+
+"Lihat Progress"
+
+Navigate to:
+
+`/progress`
+
+The `/progress` page does not need to be implemented yet.
+
+## 8. FOOTER
+
+Keep the footer minimal.
+
+EduVerse
+"Your Learning Adventure."
+
+Do not add unnecessary links.
+
+## VISUAL DIRECTION
+
+This is extremely important.
+
+The Dashboard must feel like an extension of the approved Landing Page.
+
+Think:
+- student's adventure base
+- colorful game world
+- Math Kingdom
+- Kibo companion
+- quests
+- XP
+- progress
+
+NOT:
+- admin dashboard
+- SaaS analytics dashboard
+- generic AI dashboard
+- collection of identical white cards
+
+Avoid excessive:
+- white cards
+- repeated rounded rectangles
+- huge empty spaces
+- charts
+- statistics grids
+- generic icons
+
+Use varied compositions and visual storytelling.
+
+The Math Kingdom section should have the strongest visual weight after the welcome/Kibo area.
+
+## RESPONSIVE DESIGN
+
+Support:
+- desktop
+- tablet
+- mobile
+
+On mobile:
+- navigation should remain compact
+- welcome section should stack naturally
+- Math Kingdom should remain visually prominent
+- progress should remain readable
+- quest preview can become a vertical or horizontally scrollable layout if appropriate
+- avoid excessive horizontal overflow
+
+## INTERACTION
+
+Implement only lightweight frontend interactions where useful.
+
+Examples:
+- hover states
+- button states
+- simple progress indicators
+- navigation using Next.js routing
+
+Do not add complex animation libraries.
+
+## MOCK DATA
+
+Use static frontend mock data for:
+- student name
+- XP
+- progress
+- quest status
+
+Example:
+
+Student:
+"David"
+
+XP:
+120
+
+Progress:
+65%
+
+Quest completion:
+2 / 3
+
+Make the mock data easy to replace with real Supabase data later.
+
+Do not hard-code these values across many components.
+
+Prefer a simple mock data object.
+
+## TECHNICAL REQUIREMENTS
+
+- Next.js App Router
+- TypeScript
+- Tailwind CSS
+- Use client components only when interaction requires them
+- Reuse existing components where appropriate
+- Keep code maintainable
+- Do not modify backend files
+- Do not add unnecessary packages
+- Do not implement authentication/database yet
+- Do not modify unrelated pages
+
+## ROUTING
+
+Dashboard should provide these navigation targets:
+
+Math Kingdom:
+`/math-kingdom`
+
+Progress:
+`/progress`
+
+Quest preview may use:
+`/quest`
+
+These pages do not need to be implemented yet.
+
+The Login page already navigates to:
+
+`/dashboard`
+
+Keep that flow working.
+
+## IMPORTANT IMPLEMENTATION RULE
+
+Before changing anything, inspect the existing Landing, Login, and Register implementations.
+
+Reuse the established:
+- colors
+- typography
+- buttons
+- visual components
+- Kibo asset/component
+- spacing
+- design language
+
+Do not create a completely separate design system for Dashboard.
+
+## VALIDATION
+
+After implementation:
+
+1. Run lint/type checks.
+2. Fix any errors caused by this task.
+3. Open `/dashboard` in the browser.
+4. Test navigation to `/math-kingdom`.
+5. Test navigation to `/progress`.
+6. Test quest preview navigation if implemented.
+7. Test responsive desktop/tablet/mobile layouts.
+8. Confirm Landing, Login, and Register pages were not unintentionally changed.
+9. Confirm no backend files were modified.
+10. Summarize exactly which files were changed.
+11. Summarize validation results.
+
+After completing the task, update the relevant AI Agent development documentation with the actual work performed, files changed, design decisions, and validation results.
 
 Do not claim anything that was not actually implemented or tested.
 
-Implemented only the EduVerse Login Page.
+Implemented the Dashboard page only.
+Changed:
+- frontend/app/dashboard/page.tsx
+- frontend/components/DashboardPage.tsx
+- docs/ai-agent/development-notes.md
+Features included:
+- Student header with XP and profile link
+- Kibo welcome hero
+- Math Kingdom adventure CTA to /math-kingdom
+- Static XP/progress summary
+- Quest previews with statuses
+- Kibo learning tip
+- Progress link to /progress
+- Quest links to /quest
+- Responsive desktop/tablet/mobile layout
+- No backend, database, authentication, or new dependencies
+Validation:
+- npm.cmd run lint passed with one pre-existing warning in LoginPage.tsx
+- npm.cmd run build passed
+- /dashboard statically generated successfully
+- Existing Landing, Login, Register, and backend files were not modified
+- Browser testing was unavailable in the current environment
+docs/prompt-log.md already had unrelated working-tree changes and was preserved.
 
-### Prompt 06 — Register Page
+### Prompt 06 — Sidebar
+
+Status: Planned
+
+Prompt:
+Implement a shared authenticated-area sidebar/navigation for the EduVerse project.
+
+IMPORTANT:
+- Work ONLY on the shared navigation/layout/sidebar.
+- Do NOT redesign or rewrite the approved Landing Page, Login Page, or Register Page.
+- Do NOT implement Math Kingdom, Quest Detail, Result/Reward, or Progress features yet.
+- Preserve the current visual design of the existing approved pages.
+- Do not add unnecessary dependencies.
+- Do not use external image URLs or random assets.
+
+PROJECT CONTEXT:
+EduVerse is an educational adventure web app for elementary school students (SD), especially grades 4–6.
+
+The visual direction is:
+- colorful 2D cartoon/adventure
+- child-friendly but polished
+- navy + warm yellow/orange + cream/light blue
+- game/adventure atmosphere
+- Kibo is the AI companion
+- avoid generic SaaS/admin dashboard aesthetics
+
+GOAL:
+Create a reusable sidebar/navigation for the authenticated area of EduVerse.
+
+The sidebar should be designed to appear on:
+- /dashboard
+- /math-kingdom
+- future quest pages
+- future result/reward page
+- /progress
+
+Do NOT force the sidebar onto:
+- /
+- /login
+- /register
+
+SIDEBAR CONTENT:
+
+Top:
+- EduVerse logo/brand
+
+Main navigation:
+- Beranda → /dashboard
+- Math Kingdom → /math-kingdom
+- Progress → /progress
+
+Adventure section:
+- The Missing Numbers
+- The Pizza Problem
+- The Unknown X
+
+These quest items may point to future quest routes, but do not implement the quest pages themselves.
+If the routes do not exist yet, keep the navigation structure ready without breaking the application.
+
+Bottom area:
+- Small Kibo companion/tip area
+- Current XP display, using the existing mock XP if available
+- User avatar/name
+- Optional logout visual/action only if there is already an existing frontend flow; do not implement real authentication.
+
+DESKTOP:
+- Persistent sidebar on the left.
+- Comfortable width, approximately 240–280px.
+- Rounded/card-like visual treatment is okay, but it must still feel like part of the EduVerse world.
+- Active navigation item should be clearly highlighted.
+- Sidebar should not dominate the content area.
+
+MOBILE:
+- Do NOT keep a large permanent sidebar.
+- Use a hamburger/menu button to open a mobile navigation drawer.
+- Drawer should contain the same navigation items.
+- Make sure it can be closed easily.
+- Do not break the existing responsive layout.
+
+DESIGN:
+- Make the sidebar feel like an adventure-game navigation rather than an admin dashboard.
+- Use icons where appropriate.
+- Use clear Indonesian labels for the main navigation.
+- Quest names can remain in English because they are the in-world quest titles.
+- Keep typography readable for elementary students.
+- Avoid excessive animations.
+- Use subtle hover/active states.
+- Keep accessibility in mind: buttons and links must be keyboard accessible and have appropriate labels.
+
+ARCHITECTURE:
+- Create a reusable shared component, for example:
+  components/layout/Sidebar.tsx
+  or another structure consistent with the existing project.
+- If a shared authenticated layout is appropriate, use the existing Next.js App Router structure.
+- Do not duplicate the sidebar code across pages.
+- Ensure existing Dashboard still works with the new layout.
+- Do not break existing routes.
+
+IMPORTANT:
+The Dashboard has already been approved visually.
+Integrate the sidebar into the Dashboard carefully without unnecessarily redesigning the Dashboard's existing content.
+
+VALIDATION:
+After implementation:
+1. Run lint/type checks available in the project.
+2. Run the development server if needed.
+3. Test /dashboard.
+4. Test /math-kingdom if the route already exists.
+5. Test /progress if the route already exists.
+6. Test mobile responsive behavior.
+7. Verify Landing, Login, and Register remain unchanged and functional.
+
+At the end, report:
+- files created/changed
+- how the shared sidebar/layout works
+- routes connected
+- validation performed
+- any remaining limitations
+
+Do not claim anything that was not actually implemented or tested.
+
+mplemented shared authenticated navigation.
+Files added:
+- frontend/components/layout/Sidebar.tsx
+- frontend/app/(authenticated)/layout.tsx
+- frontend/app/(authenticated)/dashboard/page.tsx
+What it does:
+- Persistent 280px desktop sidebar.
+- Mobile hamburger drawer with close controls.
+- Active route highlighting.
+- Main links: Beranda, Math Kingdom, Progress.
+- Adventure quest links prepared for future routes.
+- Kibo tip, mock XP, and user profile area.
+- Public /, /login, and /register remain outside the authenticated layout.
+- Dashboard content was preserved and wrapped without redesigning it.
+Validation:
+- npm.cmd run lint passes with one pre-existing warning in LoginPage.tsx.
+- npm.cmd run build succeeds.
+- /dashboard, /, /login, and /register are included in the generated route table.
+Limitations:
+- /math-kingdom, /progress, and quest routes do not yet exist, so their links are prepared but currently lead to Next.js 404 pages until those features are implemented.
+
+### Prompt 07 — Sidebar Revision
+
+Status: Planned
+
+Prompt:
+Update the existing EduVerse Sidebar component to support desktop collapse/expand behavior.
+
+IMPORTANT:
+- Modify ONLY the shared Sidebar/navigation component and the necessary authenticated layout wrapper.
+- Do NOT redesign the existing Dashboard, Landing Page, Login Page, or Register Page.
+- Do NOT change the current mobile drawer behavior.
+- Preserve the current visual design and color system.
+
+CURRENT SIDEBAR:
+- Desktop width is approximately 280px.
+- Mobile already uses a hamburger button and drawer.
+- Desktop currently remains permanently expanded.
+
+NEW REQUIREMENT:
+Add a desktop collapse/expand feature.
+
+DESKTOP EXPANDED:
+- Keep the current sidebar design and approximately 280px width.
+- Show logo text, navigation labels, quest names, Kibo tip, user name, and XP.
+- Add a clear collapse button near the top of the sidebar.
+
+DESKTOP COLLAPSED:
+- Sidebar should shrink to approximately 76–84px.
+- Keep only compact icons/markers visible.
+- Hide:
+  - "EduVerse" text
+  - "Learning Adventure" subtitle
+  - navigation labels
+  - quest names
+  - Kibo tip text
+  - user name
+  - XP text
+- Keep recognizable icons/visual markers.
+- Keep the active navigation state clearly visible.
+- Add tooltips or accessible aria-label/title attributes so the icons remain understandable.
+- The logo icon should remain visible.
+- The collapse button should remain accessible so the sidebar can be expanded again.
+
+STATE:
+- Use React state for collapsed/expanded desktop state.
+- Mobile open/close state should remain separate from desktop collapsed state.
+- The collapsed state should NOT cause the mobile drawer to become permanently collapsed.
+- On mobile, the existing hamburger/drawer behavior should continue working normally.
+
+CONTENT LAYOUT:
+This is important.
+
+The authenticated page content must respond to the sidebar width:
+- Expanded sidebar → content starts after approximately 280px.
+- Collapsed sidebar → content starts after approximately 80px.
+- Do not leave a large empty area when collapsed.
+- Use a shared authenticated layout wrapper if one already exists.
+- Avoid hardcoding large left margins separately on individual pages.
+
+RESPONSIVE:
+- Desktop breakpoint: md and above.
+- Mobile: keep the existing drawer behavior.
+- The collapse button should only be visible/used for desktop.
+- Mobile should continue using the hamburger button.
+
+UX:
+- Add a subtle width transition.
+- Avoid excessive animation.
+- Make the collapse control visually consistent with EduVerse.
+- Do not make the collapsed sidebar look broken or empty.
+- Maintain keyboard accessibility.
+- Preserve aria-current for active navigation.
+- Add title/aria-label to collapsed navigation items.
+
+IMPORTANT:
+Do not create a generic admin dashboard sidebar.
+It should still feel like EduVerse, a colorful educational adventure for elementary students.
+
+VALIDATION:
+1. Run lint/type checks.
+2. Test desktop expanded state.
+3. Test desktop collapsed state.
+4. Test navigating between Dashboard, Math Kingdom, and Progress.
+5. Test mobile hamburger/drawer.
+6. Verify Landing, Login, and Register remain unchanged.
+7. Verify no horizontal overflow is introduced.
+
+At the end, report:
+- files changed
+- how desktop collapse works
+- how content width/layout responds
+- validation performed
+- any remaining limitations
+
+Do not claim anything that was not actually implemented or tested.
+
+Implemented desktop Sidebar collapse/expand.
+Files changed:
+- frontend/components/layout/Sidebar.tsx
+- frontend/app/(authenticated)/layout.tsx
+Details:
+- Desktop expanded width: 280px.
+- Desktop collapsed width: 80px.
+- Collapse button is desktop-only and keyboard accessible.
+- Collapsed mode keeps logo, icons, quest markers, active state, and tooltips/ARIA labels.
+- Mobile drawer behavior remains separate and unchanged.
+- Authenticated content padding responds between 280px and 80px with a subtle transition.
+- Landing, Login, and Register were not modified.
+Validation:
+- npm.cmd run lint passed with one pre-existing warning in LoginPage.tsx.
+- npm.cmd run build passed successfully.
+- TypeScript compilation passed.
+- Static routes generated successfully.
+
+### Prompt 08 — Dashboard Revision
+
+Status: Planned
+
+Prompt:
+Refactor the current EduVerse authenticated-area layout to remove redundant Dashboard header data and centralize mock student data.
+
+IMPORTANT:
+- This is a refactor of the current approved UI.
+- Do NOT redesign the visual style.
+- Do NOT modify Landing Page, Login Page, or Register Page.
+- Do NOT implement Math Kingdom or Quest Detail yet.
+- Do NOT add Supabase/authentication yet.
+- Do NOT add unnecessary dependencies.
+- Preserve the current Sidebar design and its desktop collapse/mobile drawer behavior.
+
+GOALS:
+
+1. REMOVE REDUNDANT DASHBOARD HEADER
+
+The current Dashboard has a top header containing:
+- EduVerse brand
+- XP
+- David/user avatar
+- David/user name
+
+The Sidebar now already contains:
+- EduVerse brand
+- main navigation
+- quest navigation
+- Kibo tip
+- David/user avatar
+- XP
+
+Therefore, remove the redundant Dashboard header.
+
+The Dashboard should no longer show a second EduVerse brand, XP display, or user identity header.
+
+The main Dashboard content should start naturally inside the authenticated layout beside/below the Sidebar.
+
+Do not remove useful Dashboard content such as:
+- welcome hero
+- Kibo
+- Math Kingdom entry
+- progress summary
+- quest preview
+- Kibo's Tip
+
+2. CENTRALIZE MOCK STUDENT DATA
+
+Currently the Dashboard has a local mock student object while the Sidebar has hardcoded:
+- David
+- 120 XP
+
+Create a single reusable mock-data source.
+
+Suggested structure:
+
+frontend/lib/mock-data.ts
+
+Export the student data from there, for example:
+- name
+- xp
+- xpGoal
+- progress
+- questsCompleted
+- questsTotal
+
+Then update both Dashboard and Sidebar to import the same student data.
+
+Do NOT duplicate the student values in multiple components.
+
+3. QUEST DATA
+
+If practical and consistent with the existing structure, keep quest-related mock data centralized as well.
+
+However:
+- Do not over-engineer this.
+- Do not introduce a state-management library.
+- Keep the current quest UI and data behavior intact.
+
+4. DASHBOARD LAYOUT
+
+The Dashboard should work cleanly with the shared Sidebar.
+
+Desktop:
+- Sidebar occupies the left side.
+- Dashboard content occupies the remaining space.
+- No redundant top navigation/header.
+- No unnecessary large empty space.
+- If the Sidebar supports collapsed/expanded states, the content should respond to its width.
+
+Mobile:
+- Keep the existing hamburger/drawer Sidebar behavior.
+- Dashboard content should remain responsive.
+- Do not introduce horizontal overflow.
+
+5. BRAND / FOOTER
+
+The existing Dashboard footer can remain if it is still useful.
+Do not remove it automatically unless it is clearly redundant after the Sidebar integration.
+
+The important requirement is to remove the duplicate top header/brand.
+
+6. CODE QUALITY
+
+Keep components readable.
+Avoid putting huge amounts of inline data inside JSX.
+Use existing project conventions.
+Do not introduce unnecessary abstractions.
+
+7. VALIDATION
+
+After the refactor:
+- Run lint/type checks available in the frontend.
+- Verify /dashboard works.
+- Verify Sidebar still works.
+- Verify desktop expanded sidebar.
+- Verify desktop collapsed sidebar if that functionality already exists.
+- Verify mobile sidebar drawer.
+- Verify Dashboard content remains responsive.
+- Verify Landing, Login, and Register routes are not broken.
+
+At the end, report:
+- files created
+- files modified
+- what was removed from Dashboard
+- where the shared student data now lives
+- validation results
+- any remaining limitations
+
+Do not claim anything that was not actually implemented or tested.
+
+Implemented the authenticated-area refactor.
+Created:
+- frontend/lib/mock-data.ts — shared student and Dashboard quest mock data.
+Modified:
+- frontend/components/DashboardPage.tsx
+- frontend/components/layout/Sidebar.tsx
+Changes:
+- Removed Dashboard’s duplicate EduVerse header, XP display, avatar, and username.
+- Dashboard content now starts directly within the authenticated layout.
+- Dashboard and Sidebar both use the shared student data.
+- Dashboard quest cards now use centralized quest data.
+- Preserved Sidebar collapse, mobile drawer, navigation, and visual styling.
+- Preserved all Dashboard content and footer.
+Validation:
+- npm.cmd run lint passed with one pre-existing LoginPage warning.
+- npm.cmd run build passed.
+- /dashboard, /login, /register, and / generated successfully.
+Remaining limitation: visual browser checks for desktop/mobile states were not available in this environment.
+
+### Prompt 06 — Sidebar
 
 Status: Planned
 
