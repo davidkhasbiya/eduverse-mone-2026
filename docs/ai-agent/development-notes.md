@@ -150,3 +150,132 @@ Validation:
 - `npm.cmd run lint` completed with one pre-existing warning in `frontend/components/LoginPage.tsx` for its existing `window.location.href` navigation; no Register page lint warnings remain.
 - `npm.cmd run build` passed; `/register` was statically generated successfully.
 - Browser interaction testing was not available in the current tool environment; validation behavior and links were verified by implementation and lint/build checks.
+
+#### Task: Dashboard Page
+
+Status: Completed
+
+Objective:
+
+
+#### Task: Math Kingdom Page
+
+Status: Completed
+
+Objective:
+Files added:
+- [MathKingdomPage.tsx]
+- [math-kingdom/page.tsx]
+Included:
+- World 01 intro and Math Kingdom description
+- Adventure map composition
+- Three clickable quest destinations
+- Correct quest statuses and centralized mock data reuse
+- Back to Dashboard navigation
+- Static Kibo guide element
+- Responsive desktop/mobile layout using existing Sidebar
+- Quest routes prepared:
+  - /quest/the-missing-numbers
+  - /quest/the-pizza-problem
+  - /quest/the-unknown-x
+Validation:
+- npm.cmd run lint passed with one existing warning in LoginPage.tsx
+- npm.cmd run build passed
+- /math-kingdom generated successfully
+- TypeScript validation passed
+Remaining limitation: Quest detail routes are links only and intentionally remain unimplemented per scope.
+
+#### Task: Quest Detail Page
+
+Status: Completed
+
+Objective:
+Implemented Quest Detail MVP.
+- Added dynamic route: /quest/[slug]
+- Added centralized quest data with slug, status, description, learning goals, and activity info
+- Added completed, active, and locked quest states
+- Added Kibo contextual tip
+- Added CTA navigation to /quest/[slug]/play
+- Added placeholder play page
+- Reused existing authenticated layout and Sidebar
+- Preserved Landing, Login, Register, Dashboard, and Math Kingdom designs
+Files added:
+- frontend/app/(authenticated)/quest/[slug]/page.tsx
+- frontend/app/(authenticated)/quest/[slug]/play/page.tsx
+File modified:
+- frontend/lib/mock-data.ts
+Routes tested successfully:
+- /quest/the-missing-numbers
+- /quest/the-pizza-problem
+- /quest/the-unknown-x
+- /quest/the-pizza-problem/play
+Validation:
+- TypeScript: passed
+- Production build: passed
+- Lint: passed with one existing warning in LoginPage.tsx
+- Route smoke tests: all returned HTTP 200
+- Sidebar navigation inherits existing desktop/mobile behavior
+Remaining limitations: quiz engine, result/reward logic, persistence, backend, authentication, AI features, and progress updates are not implemented yet.
+
+#### Task: Result / Reward Page
+
+Status: Completed
+
+Objective:
+Implemented the Result / Reward MVP flow.
+Changes:
+- Updated [play/page.tsx](E:/Lomba Hackathon/M-One Telkomsel Coding Competition 2026/eduverse-mone-2026/frontend/app/(authenticated\)/quest/[slug]/play/page.tsx)
+  - Added mock activity screen
+  - Added “Selesaikan Quest / Lihat Hasil” CTA
+  - Navigates to /result/[slug]
+- Added [result/[slug\]/page.tsx](E:/Lomba Hackathon/M-One Telkomsel Coding Competition 2026/eduverse-mone-2026/frontend/app/(authenticated\)/result/[slug]/page.tsx)
+  - Quest completion state
+  - Quest title/category from centralized data
+  - Mock score: 80 / 100
+  - Mock correct answers: 4 / 5
+  - Mock reward: +40 XP
+  - Quest-specific badge label
+  - Kibo celebration message
+  - Navigation to Math Kingdom, Progress, and replay
+Routes added:
+- /result/the-missing-numbers
+- /result/the-pizza-problem
+- /result/the-unknown-x
+Validation:
+- npm.cmd run lint passed with one pre-existing warning in LoginPage.tsx
+- npm.cmd run build passed
+- All three result routes statically generated successfully
+Remaining limitation:
+- /progress is referenced by the result page and existing sidebar, but no Progress page currently exists in the repository. I did not implement it because it was outside the requested scope
+
+#### Task: Progress / Profile Page
+
+Status: Completed
+
+Objective:
+Implemented the Progress/Profile page.
+- Added route: /progress
+- Added [ProgressPage.tsx](E:/Lomba Hackathon/M-One Telkomsel Coding Competition 2026/eduverse-mone-2026/frontend/components/ProgressPage.tsx)
+- Added authenticated route page
+- Reused centralized student and quests mock data
+- Reused existing Sidebar via authenticated layout
+- Added profile header, XP progress, quest progress, badges, Kibo message, and navigation actions
+- Responsive mobile/desktop layout with no intentional horizontal overflow
+Validation:
+- ESLint passed with one pre-existing warning in LoginPage.tsx
+- TypeScript/build passed successfully
+- Existing unrelated working-tree changes were preserved
+- Backend, persistence, authentication, AI, leaderboard, and real calculations remain unimplemented as requested
+
+#### Task: Dashboard Page
+
+Status: Completed
+
+Objective:
+
+
+#### Task: Dashboard Page
+
+Status: Completed
+
+Objective:

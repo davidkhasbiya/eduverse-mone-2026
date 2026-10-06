@@ -1,0 +1,19 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { quests } from "../../../../lib/mock-data";
+
+export function generateStaticParams() { return quests.map(({ slug }) => ({ slug })); }
+
+export default async function QuestDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const quest = quests.find((item) => item.slug === slug);
+  if (!quest) notFound();
+  const locked = quest.status === "Terkunci";
+  const completed = quest.status === "Selesai";
+  return <main className="min-h-screen bg-[#f7fbff] px-5 pb-14 pt-20 text-[#17345d] sm:px-8 sm:pt-10 lg:px-10"><div className="mx-auto max-w-6xl">
+    <Link href="/math-kingdom" className="font-extrabold text-[#26858b] underline decoration-2 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-[#26858b]">← Kembali ke Math Kingdom</Link>
+    <section className={`mt-7 rounded-[30px] border-2 border-[#17345d] ${quest.color} p-6 shadow-[8px_8px_0_#17345d] sm:p-9`}><div className="flex flex-wrap items-start justify-between gap-5"><div><p className="text-sm font-black uppercase tracking-[0.18em] text-[#365477]">Quest {quest.number}</p><h1 className="mt-2 max-w-3xl text-4xl font-black tracking-tight sm:text-6xl">{quest.title}</h1><p className="mt-3 text-sm font-extrabold text-[#365477]">{quest.type}</p></div><span className="rounded-full border-2 border-[#17345d] bg-white/75 px-4 py-2 text-xs font-black uppercase tracking-wide">{quest.status}</span></div><p className="mt-7 max-w-2xl text-base font-bold leading-7 text-[#365477]">{quest.description}</p></section>
+    <div className="mt-8 grid gap-7 lg:grid-cols-[1fr_0.72fr]"><section className="rounded-[26px] border-2 border-[#17345d] bg-white p-6 shadow-[5px_5px_0_#8fd9d1] sm:p-8"><p className="text-sm font-black uppercase tracking-[0.18em] text-[#26858b]">Bekal petualangan</p><h2 className="mt-2 text-3xl font-black">Apa yang akan kamu pelajari?</h2><p className="mt-4 text-base leading-7 text-[#365477]">{quest.learning}</p><div className="mt-6 flex items-center gap-3 rounded-2xl bg-[#eef8f7] p-4 text-sm font-bold text-[#365477]"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#ffcf58] text-xl font-black">★</span><span>Setiap langkah kecil membantumu menjadi jago matematika.</span></div></section>
+      <aside className="space-y-6"><div className="flex items-center gap-4 rounded-[22px] border-2 border-[#17345d] bg-white p-4 shadow-[5px_5px_0_#17345d]"><div className="relative grid size-14 shrink-0 place-items-center rounded-full border-2 border-[#17345d] bg-[#7dd8d1] text-2xl shadow-[0_4px_0_#4ba9ad]" role="img" aria-label="Kibo"><span aria-hidden="true">★</span><span className="absolute left-3 top-5 size-1.5 rounded-full bg-[#17345d]" /><span className="absolute right-3 top-5 size-1.5 rounded-full bg-[#17345d]" /></div><p className="text-sm font-bold leading-6 text-[#365477]">Kibo: Siap? Kita pecahkan tantangan ini bersama!</p></div><div className="rounded-[26px] border-2 border-[#17345d] bg-[#fff4cf] p-6 shadow-[5px_5px_0_#f0ae37]"><p className="text-sm font-black uppercase tracking-[0.16em] text-[#a66e14]">Persiapan quest</p><p className="mt-3 text-lg font-black">{quest.activity}</p>{locked ? <div className="mt-6 rounded-2xl border-2 border-dashed border-[#d98b1d] bg-white/60 p-4 text-sm font-bold leading-6 text-[#76531c]">Quest ini masih terkunci. Selesaikan tantangan sebelumnya untuk membukanya.</div> : <Link href={`/quest/${quest.slug}/play`} className="mt-6 block rounded-2xl border-2 border-[#17345d] bg-[#17345d] px-5 py-4 text-center font-black text-white shadow-[0_4px_0_#0b213e] focus:outline-none focus:ring-4 focus:ring-[#8fd9d1]">{completed ? "Masuk / lihat lagi" : "Mulai Quest"} <span aria-hidden="true">→</span></Link>}</div></aside></div>
+  </div></main>;
+}
