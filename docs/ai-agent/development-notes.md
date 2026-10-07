@@ -289,12 +289,31 @@ Validation:
 - Existing unrelated working-tree changes were preserved
 - Backend, persistence, authentication, AI, leaderboard, and real calculations remain unimplemented as requested
 
-#### Task: Dashboard Page
+#### Task: Quest API
 
 Status: Completed
 
 Objective:
-
+Implemented the first Quest API.
+Created:
+- backend/src/data/quests.ts
+- backend/src/routes/quest.routes.ts
+Modified:
+- backend/src/index.ts
+Added endpoints:
+- GET /api/health
+- GET /api/quests
+- GET /api/quests/:slug
+Validation completed:
+- TypeScript check: passed with npx.cmd tsc --noEmit
+- Development server started successfully
+- Tested all requested quest endpoints
+- Invalid slug returns 404 with:
+{
+  "message": "Quest not found"
+}
+The frontend was not modified.
+Remaining limitations: quest data is static mock data only; there is no authentication, persistence, quiz submission, AI integration, or user-specific progress.
 
 #### Task: Dashboard Page
 

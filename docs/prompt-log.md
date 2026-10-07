@@ -2706,7 +2706,276 @@ Validation:
 - Existing unrelated working-tree changes were preserved
 - Backend, persistence, authentication, AI, leaderboard, and real calculations remain unimplemented as requested
 
-### Prompt 06 — Sidebar
+### Prompt 13 — Quest API
+
+Status: Planned
+
+Prompt:
+Implement the first Quest API for the EduVerse backend.
+
+PROJECT CONTEXT:
+
+EduVerse is an educational web application for elementary school students, focused on grades 4–6.
+
+The frontend already has these main pages:
+- Landing
+- Login
+- Register
+- Dashboard
+- Math Kingdom
+- Quest Detail
+- Result / Reward
+- Progress / Profile
+
+The backend currently has a minimal Express + TypeScript setup with:
+
+GET /api/health
+
+The backend structure is currently:
+
+backend/
+├── src/
+│   └── index.ts
+├── package.json
+└── tsconfig.json
+
+CURRENT PRIORITY:
+
+Create a simple Quest API so the frontend can later retrieve quest data from the backend.
+
+IMPORTANT:
+
+Do NOT implement:
+- Supabase
+- Gemini
+- Authentication
+- JWT
+- Real user data
+- Real quiz submission
+- AI question generation
+- AI answer analysis
+
+We are building the backend incrementally.
+
+--------------------------------------------------
+1. CREATE QUEST DATA
+--------------------------------------------------
+
+Create a dedicated mock quest data module, for example:
+
+src/data/quests.ts
+
+Use the existing three EduVerse quests:
+
+1. The Missing Numbers
+   slug: "the-missing-numbers"
+   category: "Aritmetika"
+   topic: "Angka hilang"
+   status: "completed"
+
+2. The Pizza Problem
+   slug: "the-pizza-problem"
+   category: "Pecahan"
+   topic: "Pecahan dasar"
+   status: "in-progress"
+
+3. The Unknown X
+   slug: "the-unknown-x"
+   category: "Pola / Aljabar Dasar"
+   topic: "Pola dan variabel dasar"
+   status: "locked"
+
+Each quest should have enough basic metadata for the frontend Quest Detail and Math Kingdom pages.
+
+Suggested fields:
+
+- id
+- slug
+- title
+- category
+- topic
+- description
+- status
+
+Keep the data simple.
+
+Do not duplicate unnecessary information.
+
+--------------------------------------------------
+2. CREATE QUEST ROUTES
+--------------------------------------------------
+
+Create a dedicated route module, for example:
+
+src/routes/quest.routes.ts
+
+Implement:
+
+GET /api/quests
+
+Returns all available quests.
+
+Example response:
+
+{
+  "quests": [
+    {
+      "id": "quest-01",
+      "slug": "the-missing-numbers",
+      "title": "The Missing Numbers",
+      "category": "Aritmetika",
+      "topic": "Angka hilang",
+      "description": "...",
+      "status": "completed"
+    }
+  ]
+}
+
+Implement:
+
+GET /api/quests/:slug
+
+Returns a single quest by slug.
+
+Example:
+
+GET /api/quests/the-pizza-problem
+
+If the quest exists, return:
+
+{
+  "quest": {
+    ...
+  }
+}
+
+If the quest does not exist, return HTTP 404 with a simple JSON response:
+
+{
+  "message": "Quest not found"
+}
+
+--------------------------------------------------
+3. UPDATE INDEX.TS
+--------------------------------------------------
+
+Update src/index.ts to register the quest routes.
+
+Keep:
+
+GET /api/health
+
+working exactly as before.
+
+The final routes should include:
+
+GET /api/health
+GET /api/quests
+GET /api/quests/:slug
+
+--------------------------------------------------
+4. CODE QUALITY
+--------------------------------------------------
+
+Use clean TypeScript.
+
+Prefer small focused modules instead of putting everything inside index.ts.
+
+Do not introduce unnecessary dependencies.
+
+Do not over-engineer the architecture.
+
+Keep the structure easy to extend later for:
+
+- Supabase
+- Gemini
+- question generation
+- answer analysis
+- progress
+
+--------------------------------------------------
+5. ERROR HANDLING
+--------------------------------------------------
+
+For an unknown quest slug:
+
+HTTP 404
+
+JSON:
+
+{
+  "message": "Quest not found"
+}
+
+Do not expose stack traces or unnecessary internal information.
+
+--------------------------------------------------
+6. DO NOT MODIFY FRONTEND
+--------------------------------------------------
+
+Do not modify anything inside frontend/.
+
+This task is backend-only.
+
+--------------------------------------------------
+7. VALIDATION
+--------------------------------------------------
+
+Run the TypeScript/lint checks available in the backend project.
+
+Run the development server.
+
+Test:
+
+GET /api/health
+
+GET /api/quests
+
+GET /api/quests/the-missing-numbers
+
+GET /api/quests/the-pizza-problem
+
+GET /api/quests/the-unknown-x
+
+Also test an invalid slug, for example:
+
+GET /api/quests/not-found
+
+Confirm it returns HTTP 404.
+
+At the end, report:
+
+- files created
+- files modified
+- API endpoints added
+- example responses
+- validation performed
+- remaining limitations
+
+Do not claim anything that was not actually implemented or tested.
+
+Implemented the first Quest API.
+Created:
+- backend/src/data/quests.ts
+- backend/src/routes/quest.routes.ts
+Modified:
+- backend/src/index.ts
+Added endpoints:
+- GET /api/health
+- GET /api/quests
+- GET /api/quests/:slug
+Validation completed:
+- TypeScript check: passed with npx.cmd tsc --noEmit
+- Development server started successfully
+- Tested all requested quest endpoints
+- Invalid slug returns 404 with:
+{
+  "message": "Quest not found"
+}
+The frontend was not modified.
+Remaining limitations: quest data is static mock data only; there is no authentication, persistence, quiz submission, AI integration, or user-specific progress.
+
+### Prompt 13 — Quest API
 
 Status: Planned
 
@@ -2717,3 +2986,24 @@ Do not claim anything that was not actually implemented or tested.
 
 Implemented only the EduVerse Login Page.
 
+### Prompt 13 — Quest API
+
+Status: Planned
+
+Prompt:
+
+
+Do not claim anything that was not actually implemented or tested.
+
+Implemented only the EduVerse Login Page.
+
+### Prompt 13 — Quest API
+
+Status: Planned
+
+Prompt:
+
+
+Do not claim anything that was not actually implemented or tested.
+
+Implemented only the EduVerse Login Page.
