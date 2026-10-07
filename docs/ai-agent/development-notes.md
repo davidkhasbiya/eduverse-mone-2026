@@ -315,7 +315,67 @@ Validation completed:
 The frontend was not modified.
 Remaining limitations: quest data is static mock data only; there is no authentication, persistence, quiz submission, AI integration, or user-specific progress.
 
-#### Task: Dashboard Page
+#### Task: Question API + Quiz Engine
+
+Status: Completed
+
+Objective:
+Implemented the backend Quiz / Question API.
+Created:
+- [questions.ts]
+- [question.routes.ts]
+Modified:
+- [index.ts]
+Added endpoints:
+- GET /api/quests/:slug/questions
+- POST /api/quests/:slug/submit
+Features:
+- 15 static questions across 3 quests
+- correctOption remains backend-only
+- Server-side answer evaluation
+- Score: 20 points per correct answer
+- XP: 10 per correct answer
+- Validation for invalid answers, question IDs, and quest slugs
+- Existing endpoints preserved
+- Frontend unchanged
+Validation:
+- npx.cmd tsc --noEmit passed.
+- Development server could not start because the environment raised Node.js uv_os_get_passwd ENOMEM; endpoint smoke tests could not run.
+Existing unrelated modifications in docs/ were preserved.
+
+#### Task: Question API + Quiz Engine Revision
+
+Status: Completed
+
+Objective:
+Fixed/verified the route registration.
+- Root cause: the running server was stale and did not include the question router registration.
+- Registration now present in backend/src/index.ts:
+app.use("/api/quests", questionRouter);
+- Existing paths in question.routes.ts were already correct:
+  - GET /:slug/questions
+  - POST /:slug/submit
+- Files involved:
+  - backend/src/index.ts
+  - backend/src/routes/question.routes.ts
+- No question data, frontend, dependencies, or API design changed.
+Validation:
+- npx.cmd tsc --noEmit ✅
+- All three question GET endpoints ✅
+- Submit endpoint ✅
+- correctOption omitted from GET responses ✅
+- /api/health ✅
+- /api/quests ✅
+- npm run dev was blocked by an environment Node/tsx uv_os_get_passwd ENOMEM error; the compiled current backend was started successfully for route testing.
+
+#### Task: Question API + Quiz Engine
+
+Status: Completed
+
+Objective:
+
+
+#### Task: Question API + Quiz Engine
 
 Status: Completed
 

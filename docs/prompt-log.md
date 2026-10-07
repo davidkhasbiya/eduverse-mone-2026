@@ -2975,27 +2975,540 @@ Validation completed:
 The frontend was not modified.
 Remaining limitations: quest data is static mock data only; there is no authentication, persistence, quiz submission, AI integration, or user-specific progress.
 
-### Prompt 13 — Quest API
+### Prompt 14 — Question API + Quiz Engine
 
 Status: Planned
 
 Prompt:
+Implement the first Quiz / Question API for the EduVerse backend.
 
+PROJECT CONTEXT:
+
+EduVerse is an educational web application for elementary school students, especially grades 4–6.
+
+The backend currently has:
+
+GET /api/health
+GET /api/quests
+GET /api/quests/:slug
+
+Quest data is currently static mock data.
+
+The backend structure is approximately:
+
+backend/
+├── src/
+│   ├── data/
+│   │   └── quests.ts
+│   ├── routes/
+│   │   └── quest.routes.ts
+│   └── index.ts
+├── package.json
+└── tsconfig.json
+
+CURRENT PRIORITY:
+
+Build a basic Quiz / Question API and server-side answer evaluation.
+
+This is still an incremental MVP.
+
+IMPORTANT:
+
+DO NOT IMPLEMENT:
+- Supabase
+- Gemini
+- Authentication
+- JWT
+- Persistent user data
+- Real user progress
+- Real leaderboard
+- AI question generation
+- AI answer analysis
+
+Use static mock questions for now.
+
+The architecture must make it easy to replace the static question source with Gemini later.
+
+--------------------------------------------------
+1. QUESTION DATA
+--------------------------------------------------
+
+Create a dedicated question data module, for example:
+
+src/data/questions.ts
+
+Create 5 questions for each existing quest:
+
+1. The Missing Numbers
+2. The Pizza Problem
+3. The Unknown X
+
+Total:
+15 mock questions.
+
+Keep the questions appropriate for elementary school students.
+
+QUEST 1 — THE MISSING NUMBERS
+
+Topic:
+Arithmetic / missing numbers
+
+Example style:
+"12 + ? = 20"
+
+Use multiple-choice questions.
+
+QUEST 2 — THE PIZZA PROBLEM
+
+Topic:
+Basic fractions
+
+Example style:
+"A pizza is divided into 8 equal pieces. David eats 3 pieces. What fraction did David eat?"
+
+Use multiple-choice questions.
+
+QUEST 3 — THE UNKNOWN X
+
+Topic:
+Basic patterns / introductory variables
+
+Example style:
+"x + 5 = 12. What is x?"
+
+Use multiple-choice questions.
+
+Each internal question should contain:
+
+- id
+- questSlug
+- question
+- options
+- correctOption
+- explanation
+- difficulty
+- topic
+
+Example internal structure:
+
+{
+  id: "missing-01",
+  questSlug: "the-missing-numbers",
+  question: "12 + ? = 20",
+  options: ["6", "7", "8", "9"],
+  correctOption: "8",
+  explanation: "12 + 8 = 20.",
+  difficulty: "easy",
+  topic: "arithmetic"
+}
+
+IMPORTANT:
+
+The correctOption must remain backend-only.
+
+Do NOT expose correctOption through the GET questions endpoint.
+
+--------------------------------------------------
+2. GET QUESTIONS ENDPOINT
+--------------------------------------------------
+
+Create a dedicated route module if appropriate, for example:
+
+src/routes/question.routes.ts
+
+Implement:
+
+GET /api/quests/:slug/questions
+
+Example:
+
+GET /api/quests/the-missing-numbers/questions
+
+Response:
+
+{
+  "quest": {
+    "slug": "the-missing-numbers",
+    "title": "The Missing Numbers"
+  },
+  "questions": [
+    {
+      "id": "missing-01",
+      "question": "12 + ? = 20",
+      "options": ["6", "7", "8", "9"],
+      "difficulty": "easy",
+      "topic": "arithmetic"
+    }
+  ]
+}
+
+Do NOT include:
+- correctOption
+- answer key
+
+If the quest slug does not exist:
+
+HTTP 404
+
+{
+  "message": "Quest not found"
+}
+
+If the quest exists but has no questions:
+
+HTTP 404
+
+{
+  "message": "Questions not found"
+}
+
+--------------------------------------------------
+3. SUBMIT QUIZ ENDPOINT
+--------------------------------------------------
+
+Implement:
+
+POST /api/quests/:slug/submit
+
+The request body should contain answers.
+
+Use a simple structure:
+
+{
+  "answers": [
+    {
+      "questionId": "missing-01",
+      "answer": "8"
+    },
+    {
+      "questionId": "missing-02",
+      "answer": "15"
+    }
+  ]
+}
+
+The backend must evaluate the submitted answers using the private correctOption values.
+
+Do NOT trust any score sent by the frontend.
+
+The backend calculates:
+
+- totalQuestions
+- correctAnswers
+- incorrectAnswers
+- score
+- xpEarned
+
+For the initial MVP:
+
+- Each correct answer = 20 points
+- Score = correctAnswers × 20
+- Each correct answer = 10 XP
+- XP earned = correctAnswers × 10
+
+Example:
+
+5 questions
+4 correct
+
+score = 80
+xpEarned = 40
+
+Return:
+
+{
+  "result": {
+    "questSlug": "the-missing-numbers",
+    "totalQuestions": 5,
+    "correctAnswers": 4,
+    "incorrectAnswers": 1,
+    "score": 80,
+    "xpEarned": 40
+  }
+}
+
+These are temporary rules.
+
+Do NOT persist the result yet.
+
+--------------------------------------------------
+4. VALIDATION
+--------------------------------------------------
+
+Validate the request.
+
+If answers is missing or not an array:
+
+HTTP 400
+
+{
+  "message": "Invalid answers"
+}
+
+If a questionId does not belong to the requested quest:
+
+HTTP 400
+
+{
+  "message": "Invalid question"
+}
+
+If an answer is missing:
+
+HTTP 400
+
+{
+  "message": "Invalid answer"
+}
+
+Do not expose the correct answer in error responses.
+
+--------------------------------------------------
+5. SECURITY / DATA EXPOSURE
+--------------------------------------------------
+
+IMPORTANT:
+
+The GET questions endpoint must never expose:
+
+correctOption
+
+The frontend should only receive:
+
+- question
+- options
+- difficulty
+- topic
+- id
+
+The backend is responsible for answer validation.
+
+Do not implement any client-side answer key.
+
+--------------------------------------------------
+6. ROUTE STRUCTURE
+--------------------------------------------------
+
+Keep the existing routes working:
+
+GET /api/health
+GET /api/quests
+GET /api/quests/:slug
+
+Add:
+
+GET /api/quests/:slug/questions
+POST /api/quests/:slug/submit
+
+Keep route responsibilities separated.
+
+Do not put all quiz logic inside index.ts.
+
+--------------------------------------------------
+7. CODE QUALITY
+--------------------------------------------------
+
+Use clean TypeScript.
+
+Avoid unnecessary dependencies.
+
+Keep static question data separate from route logic.
+
+Keep answer evaluation separate from route registration if that makes the code clearer.
+
+Do not over-engineer.
+
+The future architecture should allow:
+
+Static Questions
+      ↓
+Gemini Question Generator
+      ↓
+Validated Question Schema
+      ↓
+Quiz Engine
+      ↓
+Answer Analyzer
+      ↓
+Progress / XP
+
+For now only implement:
+
+Static Questions
+      ↓
+Quiz Engine
+      ↓
+Result
+
+--------------------------------------------------
+8. DO NOT MODIFY FRONTEND
+--------------------------------------------------
+
+Do not modify anything inside frontend/.
+
+This task is backend-only.
+
+--------------------------------------------------
+9. VALIDATION
+--------------------------------------------------
+
+Run:
+
+npx.cmd tsc --noEmit
+
+Start the development server.
+
+Test:
+
+GET /api/health
+
+GET /api/quests
+
+GET /api/quests/the-missing-numbers/questions
+
+GET /api/quests/the-pizza-problem/questions
+
+GET /api/quests/the-unknown-x/questions
+
+Verify that the question responses do NOT contain correctOption.
+
+Test:
+
+POST /api/quests/the-missing-numbers/submit
+
+with valid answers.
+
+Verify that the backend calculates score and XP.
+
+Test an invalid question ID.
+
+Test an invalid request body.
+
+Test an unknown quest slug.
+
+Verify existing endpoints still work.
+
+At the end, report:
+
+- files created
+- files modified
+- endpoints added
+- question data structure
+- submit request structure
+- result response structure
+- validation performed
+- remaining limitations
 
 Do not claim anything that was not actually implemented or tested.
 
-Implemented only the EduVerse Login Page.
+Implemented the backend Quiz / Question API.
+Created:
+- [questions.ts]
+- [question.routes.ts]
+Modified:
+- [index.ts]
+Added endpoints:
+- GET /api/quests/:slug/questions
+- POST /api/quests/:slug/submit
+Features:
+- 15 static questions across 3 quests
+- correctOption remains backend-only
+- Server-side answer evaluation
+- Score: 20 points per correct answer
+- XP: 10 per correct answer
+- Validation for invalid answers, question IDs, and quest slugs
+- Existing endpoints preserved
+- Frontend unchanged
+Validation:
+- npx.cmd tsc --noEmit passed.
+- Development server could not start because the environment raised Node.js uv_os_get_passwd ENOMEM; endpoint smoke tests could not run.
+Existing unrelated modifications in docs/ were preserved.
 
-### Prompt 13 — Quest API
+### Prompt 15 — Question API + Quiz Engine Revision
 
 Status: Planned
 
 Prompt:
+The backend server is now running successfully.
 
+Current runtime test results:
+
+GET /api/health
+→ works
+
+GET /api/quests
+→ works
+
+GET /api/quests/the-missing-numbers/questions
+→ returns:
+Cannot GET /api/quests/the-missing-numbers/questions
+
+This indicates the Question API route is not currently reachable.
+
+Please diagnose and fix ONLY the route registration/path issue.
+
+IMPORTANT:
+- Do not redesign the Question API.
+- Do not change the question data.
+- Do not modify the frontend.
+- Do not add dependencies.
+- Keep the existing Quest API working.
+- Keep correctOption backend-only.
+- Preserve the current question route implementation if it is already correct.
+
+Check:
+1. backend/src/index.ts
+2. backend/src/routes/question.routes.ts
+3. The way quest.routes.ts is registered
+4. The route paths inside question.routes.ts
+
+Make the minimum necessary change so these endpoints are reachable:
+
+GET /api/quests/the-missing-numbers/questions
+GET /api/quests/the-pizza-problem/questions
+GET /api/quests/the-unknown-x/questions
+
+Also ensure:
+
+POST /api/quests/the-missing-numbers/submit
+
+is reachable.
+
+After fixing:
+- Run `npx.cmd tsc --noEmit`
+- Start the development server
+- Test the GET question endpoint
+- Test the POST submit endpoint
+- Test that GET questions does NOT expose `correctOption`
+- Confirm the existing `/api/health` and `/api/quests` endpoints still work.
+
+At the end, report:
+- root cause
+- files modified
+- exact route registration/path that was fixed
+- validation results
 
 Do not claim anything that was not actually implemented or tested.
 
-Implemented only the EduVerse Login Page.
+Fixed/verified the route registration.
+- Root cause: the running server was stale and did not include the question router registration.
+- Registration now present in backend/src/index.ts:
+app.use("/api/quests", questionRouter);
+- Existing paths in question.routes.ts were already correct:
+  - GET /:slug/questions
+  - POST /:slug/submit
+- Files involved:
+  - backend/src/index.ts
+  - backend/src/routes/question.routes.ts
+- No question data, frontend, dependencies, or API design changed.
+Validation:
+- npx.cmd tsc --noEmit ✅
+- All three question GET endpoints ✅
+- Submit endpoint ✅
+- correctOption omitted from GET responses ✅
+- /api/health ✅
+- /api/quests ✅
+- npm run dev was blocked by an environment Node/tsx uv_os_get_passwd ENOMEM error; the compiled current backend was started successfully for route testing.
 
 ### Prompt 13 — Quest API
 
