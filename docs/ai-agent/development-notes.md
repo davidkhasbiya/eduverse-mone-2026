@@ -368,14 +368,473 @@ Validation:
 - /api/quests ✅
 - npm run dev was blocked by an environment Node/tsx uv_os_get_passwd ENOMEM error; the compiled current backend was started successfully for route testing.
 
-#### Task: Question API + Quiz Engine
+#### Task: Auth + Database Architecture
+
+Status: Completed
+
+Objective:
+# EduVerse Authentication and Supabase Database Architecture
+
+No project files were modified.
+
+## 1. Recommended architecture
+
+```text
+Browser / Next.js
+  ├─ Supabase Auth
+  │    ├─ Email + Password
+  │    └─ Google OAuth
+  │
+  └─ Express API
+       ├─ Receives Supabase access token
+       ├─ Verifies authenticated user
+       ├─ Uses user UUID
+       ├─ Reads public quest data
+       └─ Performs secure quiz submission/scoring
+
+Supabase
+  ├─ auth.users
+  ├─ profiles
+  ├─ quests
+  ├─ questions
+  ├─ user_progress
+  └─ quiz_attempts
+```
+
+Supabase Auth owns identity and credentials. The Express backend owns protected business logic such as answer validation, score calculation, XP calculation, and secure access to answer keys.
+
+## 2. Email/password registration flow
+
+```text
+User
+  → Supabase signUp()
+  → auth.users created
+  → database trigger creates profiles row
+  → email confirmation if enabled
+  → authenticated session after confirmation/login
+```
+
+Recommended profile creation strategy:
+
+- Create `profiles` automatically with a database trigger on `auth.users`.
+- Use `INSERT ... ON CONFLICT DO NOTHING` so repeated events cannot create duplicates.
+- Do not create profiles independently from both the frontend and backend.
+- The profile primary key should equal the Supabase Auth user UUID.
+
+Example trigger behavior:
+
+```text
+new auth.users.id
+  → profiles.id
+new auth.users.raw_user_meta_data.display_name
+  → profiles.display_name
+```
+
+Only trusted, non-sensitive metadata should be copied from Auth metadata.
+
+## 3. Email/password login flow
+
+```text
+User
+  → Supabase signInWithPassword()
+  → Supabase validates credentials
+  → Supabase returns session
+  → frontend receives access token
+  → frontend sends Authorization: Bearer <token> to Express
+```
+
+Passwords, refresh tokens, and access-token storage should remain under Supabase Auth control.
+
+## 4. Google OAuth flow
+
+```text
+User
+  → Supabase OAuth sign-in
+  → Google authenticates user
+  → Google redirects to Supabase
+  → Supabase creates or reuses auth.users
+  → profile trigger creates profiles row if missing
+  → Supabase returns authenticated session
+```
+
+The trigger should be idempotent because Google may sign in an existing user or create a new user.
+
+## 5. JWT → Express authentication flow
+
+Expected request:
+
+```http
+Authorization: Bearer <supabase-access-token>
+```
+
+Express should eventually:
+
+1. Read the `Authorization` header.
+2. Confirm the `Bearer` scheme.
+3. Extract the access token.
+4. Validate the token using Supabase Auth facilities.
+5. Obtain the authenticated Supabase user UUID.
+6. Attach the identity to the request, for example:
+
+```text
+req.user = {
+  id: "<auth.users UUID>"
+}
+```
+
+7. Use `req.user.id` for all user-specific database queries.
+8. Never accept `user_id` from the request body for authorization purposes.
+
+The backend must derive identity from the verified token, not from frontend-provided fields.
+
+Authentication should be required for:
+
+- Profile access
+- User progress
+- Quiz submission
+- Quiz attempts
+- Personalized recommendations
+- Any student-specific data
+
+## 6. Database schema
+
+### `profiles`
+
+| Column | PostgreSQL type | Constraints |
+|---|---|---|
+| `id` | `uuid` | Primary key, references `auth.users(id)` |
+| `display_name` | `text` | Optional |
+| `avatar` | `text` | Optional |
+| `created_at` | `timestamptz` | Default `now()` |
+| `updated_at` | `timestamptz` | Default `now()` |
+
+Recommended foreign key behavior:
+
+```text
+profiles.id → auth.users.id ON DELETE CASCADE
+```
+
+Do not store passwords, tokens, refresh tokens, or Google credentials.
+
+### `quests`
+
+| Column | PostgreSQL type | Constraints |
+|---|---|---|
+| `id` | `uuid` | Primary key |
+| `slug` | `text` | Unique, not null |
+| `title` | `text` | Not null |
+| `category` | `text` | Optional |
+| `topic` | `text` | Optional |
+| `description` | `text` | Optional |
+| `created_at` | `timestamptz` | Default `now()` |
+
+The following quests can be seeded:
+
+- `the-missing-numbers`
+- `the-pizza-problem`
+- `the-unknown-x`
+
+Quest completion state must not be stored here.
+
+### `questions`
+
+| Column | PostgreSQL type | Constraints |
+|---|---|---|
+| `id` | `uuid` | Primary key |
+| `quest_id` | `uuid` | Foreign key to `quests(id)` |
+| `question` | `text` | Not null |
+| `options` | `jsonb` | Not null |
+| `correct_option` | `text` | Not exposed to clients |
+| `explanation` | `text` | Optional |
+| `difficulty` | `text` or `smallint` | Optional |
+| `topic` | `text` | Optional |
+| `created_at` | `timestamptz` | Default `now()` |
+
+Recommended relationship:
+
+```text
+questions.quest_id → quests.id ON DELETE CASCADE
+```
+
+The frontend should not query this table directly if it contains `correct_option`.
+
+Preferred approach:
+
+- Express retrieves questions using a secure backend credential.
+- Express returns a sanitized question DTO without `correct_option`.
+- During submission, Express retrieves the answer key privately and calculates the result.
+
+Alternative: create a database view excluding `correct_option`, but quiz submission should still be performed by Express.
+
+### `user_progress`
+
+| Column | PostgreSQL type | Constraints |
+|---|---|---|
+| `id` | `uuid` | Primary key |
+| `user_id` | `uuid` | Foreign key to `profiles(id)` |
+| `quest_id` | `uuid` | Foreign key to `quests(id)` |
+| `status` | `text` | Restricted to `locked`, `in-progress`, `completed` |
+| `progress` | `smallint` or `numeric` | Validated range, for example 0–100 |
+| `best_score` | `numeric` or `smallint` | Optional |
+| `xp_earned` | `integer` | Default 0 |
+| `completed_at` | `timestamptz` | Nullable |
+| `updated_at` | `timestamptz` | Default `now()` |
+
+Required constraint:
+
+```text
+UNIQUE (user_id, quest_id)
+```
+
+Recommended foreign keys:
+
+```text
+user_progress.user_id → profiles.id ON DELETE CASCADE
+user_progress.quest_id → quests.id ON DELETE CASCADE
+```
+
+### `quiz_attempts`
+
+| Column | PostgreSQL type | Constraints |
+|---|---|---|
+| `id` | `uuid` | Primary key |
+| `user_id` | `uuid` | Foreign key to `profiles(id)` |
+| `quest_id` | `uuid` | Foreign key to `quests(id)` |
+| `score` | `numeric` or `smallint` | Not null |
+| `correct_answers` | `smallint` | Not null |
+| `total_questions` | `smallint` | Not null |
+| `xp_earned` | `integer` | Not null |
+| `created_at` | `timestamptz` | Default `now()` |
+
+Recommended foreign keys:
+
+```text
+quiz_attempts.user_id → profiles.id ON DELETE CASCADE
+quiz_attempts.quest_id → quests.id ON DELETE CASCADE
+```
+
+Each quiz attempt is a separate record. No uniqueness constraint is needed.
+
+## 7. Recommended indexes
+
+```text
+quests(slug)
+questions(quest_id)
+user_progress(user_id)
+user_progress(quest_id)
+user_progress(user_id, quest_id)
+quiz_attempts(user_id)
+quiz_attempts(quest_id)
+quiz_attempts(user_id, created_at DESC)
+```
+
+The unique constraint on `user_progress(user_id, quest_id)` also creates a useful index.
+
+## 8. RLS recommendations
+
+### `profiles`
+
+Enable RLS.
+
+Policies:
+
+- `SELECT`: user may read only where `profiles.id = auth.uid()`.
+- `UPDATE`: user may update only where `profiles.id = auth.uid()`.
+- `INSERT`: preferably handled by the Auth trigger.
+- `DELETE`: preferably restricted or handled through Auth account deletion.
+
+### `quests`
+
+Enable RLS.
+
+- Authenticated users may read quest metadata.
+- Public read access is optional if the landing page needs quest previews.
+- No client-side insert, update, or delete policies.
+
+### `questions`
+
+Recommended policy:
+
+- Do not permit direct browser reads from the raw table.
+- Access questions through Express, which removes `correct_option`.
+- Keep insert/update/delete restricted to administrators or the backend.
+
+If direct client reads are required, expose a sanitized view that excludes `correct_option`.
+
+### `user_progress`
+
+Enable RLS.
+
+- `SELECT`: only rows where `user_id = auth.uid()`.
+- `INSERT`: only where `user_id = auth.uid()`, if direct client creation is allowed.
+- `UPDATE`: only where `user_id = auth.uid()`.
+- `DELETE`: normally restricted.
+
+For stronger integrity, progress updates should be performed by Express after validating a quiz attempt.
+
+### `quiz_attempts`
+
+Enable RLS.
+
+- `SELECT`: only rows where `user_id = auth.uid()`.
+- `INSERT`: preferably performed by Express after scoring.
+- `UPDATE` and `DELETE`: restricted.
+
+The frontend must never be able to submit an arbitrary score or XP amount.
+
+## 9. API authentication matrix
+
+| Endpoint | Recommended access | Notes |
+|---|---|---|
+| `GET /api/health` | Public | Operational health check |
+| `GET /api/quests` | Authenticated, or public if desired | Contains global quest metadata only |
+| `GET /api/quests/:slug` | Authenticated, or public if desired | No personal progress included |
+| `GET /api/quests/:slug/questions` | Authenticated | Express returns sanitized questions |
+| `POST /api/quests/:slug/submit` | Authenticated | Express verifies answers and calculates score/XP |
+
+The current static quest endpoints can remain public during early development, but production should require authentication for student-specific behavior and question delivery.
+
+## 10. Quiz submission model
+
+The browser should submit answer selections, not a score:
+
+```json
+{
+  "answers": [
+    {
+      "question_id": "question-uuid",
+      "selected_option": "B"
+    }
+  ]
+}
+```
+
+Express should:
+
+1. Authenticate the user.
+2. Verify the quest exists.
+3. Load the official questions and answer key.
+4. Validate submitted question IDs.
+5. Calculate correct answers and score.
+6. Calculate XP using server-controlled rules.
+7. Insert `quiz_attempts`.
+8. Upsert `user_progress`.
+9. Return the result without exposing the answer key unnecessarily.
+
+## 11. Gemini integration boundary
+
+Gemini should operate behind Express as an application service.
+
+Allowed responsibilities:
+
+- Generate draft questions.
+- Suggest explanations.
+- Analyze learning patterns.
+- Generate Kibo feedback.
+- Suggest personalized practice.
+
+Gemini must not control:
+
+- Authentication
+- User identity
+- JWT validation
+- Database authorization
+- Final score calculation
+- XP calculation
+- Completion status
+- Direct database writes without validation
+
+Generated questions should be reviewed or validated before becoming production question records.
+
+A safe flow is:
+
+```text
+Express
+  → Gemini service
+  → validate generated output
+  → optionally review/moderate
+  → store approved question
+```
+
+## 12. Migration and implementation order
+
+1. Confirm Supabase project and environment separation.
+2. Create `profiles` and the Auth-user profile trigger.
+3. Create `quests` and seed the three quests.
+4. Create `questions` and seed/import question data.
+5. Create `user_progress`.
+6. Create `quiz_attempts`.
+7. Add foreign keys, check constraints, unique constraints, and indexes.
+8. Enable RLS.
+9. Add RLS policies.
+10. Configure email/password Auth.
+11. Configure Google OAuth and redirect URLs.
+12. Implement backend token verification.
+13. Implement sanitized question retrieval.
+14. Implement server-side quiz scoring and XP.
+15. Replace static mock data incrementally.
+16. Add Gemini services only after deterministic scoring and authorization are stable.
+
+## 13. Security pitfalls to avoid
+
+- Exposing the Supabase service-role key to the frontend.
+- Trusting `user_id` sent in request bodies.
+- Returning `correct_option` to the browser.
+- Accepting client-provided scores, XP, or completion status.
+- Allowing users to query another user’s progress or attempts.
+- Creating profiles from multiple independent code paths.
+- Storing passwords or OAuth credentials in application tables.
+- Omitting a unique constraint on `(user_id, quest_id)`.
+- Using Gemini to determine authoritative scores or permissions.
+- Treating a decoded JWT as valid without proper verification.
+- Forgetting to configure OAuth redirect URLs securely.
+- Allowing unrestricted client writes to questions or quest metadata.
+- Exposing detailed answer explanations before quiz submission if that reveals answers.
+
+## Final recommendation
+
+Yes. This architecture is ready to implement in Supabase.
+
+Before implementation, confirm only these decisions:
+
+1. Whether quest metadata should be publicly readable or authenticated-only.
+2. Whether all question retrieval and progress mutations must go through Express.
+3. The exact scoring and XP rules.
+4. Whether `progress` represents a percentage, question count, or another metric.
+5. Whether email confirmation is required before the first authenticated session.
+
+#### Task: Backend Supabase Client
 
 Status: Completed
 
 Objective:
 
+Implemented the initial server-only Supabase connection for the Express backend.
 
-#### Task: Question API + Quiz Engine
+- Added `@supabase/supabase-js` to `backend`.
+- Added `backend/src/lib/supabase.ts`, which loads and validates `SUPABASE_URL` and `SUPABASE_SECRET_KEY` without logging secret values.
+- Added `backend/.env.example` with placeholders and ignored `backend/.env` via `backend/.gitignore`.
+- Imported the client during backend startup so incomplete configuration fails with a clear error.
+- Preserved the existing Express, CORS, health, quest, and quiz endpoints; no schema, seed data, authentication, or frontend changes were made.
+- Validation performed: `npx tsc --noEmit` passed; `git diff --check` passed; endpoint source diff was reviewed.
+
+#### Task: Supabase Auth
+Status: Completed
+
+Objective:
+
+Implemented email/password Supabase Auth integration.
+
+- Added the frontend Supabase browser client using `NEXT_PUBLIC_SUPABASE_URL` and the publishable key (with the legacy anon-key name supported).
+- Login uses `signInWithPassword`; registration uses `signUp` and passes only the non-sensitive `display_name` metadata for the existing profile trigger.
+- Added backend `requireAuth` middleware. It verifies Bearer tokens with `supabase.auth.getUser(token)` and never trusts an unverified JWT payload.
+- Added `GET /api/auth/me`, which queries `profiles` only with the verified `req.authUser.id`.
+- Existing quest and quiz routes were left unchanged. No schema, RLS policy, trigger, password storage, or secret-key exposure changes were made.
+- Validation completed: backend and frontend `tsc --noEmit`, and frontend `npm run lint`. A production build was not run in this change.
+
+Required environment variables are documented in `frontend/.env.example`; the backend continues to require `SUPABASE_URL` and `SUPABASE_SECRET_KEY` in `backend/.env`.
+
+#### Task: Backend Supabase Client
 
 Status: Completed
 

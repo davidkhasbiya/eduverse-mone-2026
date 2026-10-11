@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { supabase } from "../lib/supabase";
 
 function KiboBadge() {
   return (
@@ -23,12 +25,18 @@ function KiboBadge() {
 }
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [googleMessage, setGoogleMessage] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    window.location.href = "/dashboard";
+    setError(null);
+    const form = new FormData(event.currentTarget);
+    const { error: authError } = await supabase.auth.signInWithPassword({ email: String(form.get("email") ?? "").trim(), password: String(form.get("password") ?? "") });
+    if (authError) { setError("Email atau password tidak valid."); return; }
+    router.push("/dashboard");
   }
 
   return (
@@ -51,6 +59,7 @@ export default function LoginPage() {
               <div><label htmlFor="email" className="mb-2 block text-sm font-extrabold">Email</label><input id="email" name="email" type="email" autoComplete="email" placeholder="Masukkan email kamu" required className="w-full rounded-2xl border-2 border-[#cbdbe5] bg-[#fafdff] px-4 py-3.5 text-[#17345d] outline-none transition placeholder:text-[#91a3b6] focus:border-[#26858b] focus:ring-4 focus:ring-[#8fd9d1]/40" /></div>
               <div><label htmlFor="password" className="mb-2 block text-sm font-extrabold">Password</label><div className="relative"><input id="password" name="password" type={showPassword ? "text" : "password"} autoComplete="current-password" placeholder="Masukkan password kamu" required className="w-full rounded-2xl border-2 border-[#cbdbe5] bg-[#fafdff] px-4 py-3.5 pr-20 text-[#17345d] outline-none transition placeholder:text-[#91a3b6] focus:border-[#26858b] focus:ring-4 focus:ring-[#8fd9d1]/40" /><button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-extrabold text-[#26858b] hover:bg-[#dff3ef] focus:outline-none focus:ring-2 focus:ring-[#26858b]">{showPassword ? "Sembunyikan" : "Lihat"}</button></div></div>
               <button type="submit" className="w-full rounded-2xl bg-[#f4aa32] px-5 py-4 font-extrabold text-[#17345d] shadow-[0_5px_0_#d98b1d] transition hover:-translate-y-0.5 hover:bg-[#ffc451] focus:outline-none focus:ring-4 focus:ring-[#f4aa32]/40 active:translate-y-1 active:shadow-none">Masuk <span aria-hidden="true">→</span></button>
+            {error && <p role="alert" className="mt-3 text-sm font-bold text-[#c45b45]">{error}</p>}
             </form>
             <div className="my-6 flex items-center gap-3 text-xs font-bold text-[#91a3b6]"><span className="h-px flex-1 bg-[#dce7ef]" /> atau <span className="h-px flex-1 bg-[#dce7ef]" /></div>
             <button type="button" onClick={() => setGoogleMessage(true)} className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-[#cbdbe5] bg-white px-5 py-3.5 font-extrabold text-[#365477] transition hover:border-[#17345d] hover:bg-[#fafdff] focus:outline-none focus:ring-4 focus:ring-[#8fd9d1]/40"><span className="grid size-6 place-items-center rounded-full bg-[#4285f4] text-sm font-black text-white">G</span> Masuk dengan Google</button>

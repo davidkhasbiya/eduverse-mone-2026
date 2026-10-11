@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { supabase } from "../lib/supabase";
 
 function KiboBadge() {
   return (
@@ -31,8 +32,10 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [googleMessage, setGoogleMessage] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const name = String(form.get("name") ?? "").trim();
@@ -47,8 +50,12 @@ export default function RegisterPage() {
     if (!confirmPassword) nextErrors.confirmPassword = "Ulangi password kamu.";
     if (password && confirmPassword && password !== confirmPassword) nextErrors.confirmPassword = "Password belum sama. Coba cek lagi.";
 
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length === 0) router.push("/login");
+    setErrors(nextErrors); setSubmitError(null); setSuccessMessage(null);
+    if (Object.keys(nextErrors).length !== 0) return;
+    const { error } = await supabase.auth.signUp({ email, password, options: { data: { display_name: name } } });
+    if (error) { setSubmitError("Pendaftaran belum berhasil. Periksa data dan coba lagi."); return; }
+    setSuccessMessage("Akun berhasil dibuat. Silakan cek email jika konfirmasi diperlukan, lalu masuk.");
+    setTimeout(() => router.push("/login"), 1200);
   }
 
   const inputClass = "w-full rounded-2xl border-2 border-[#cbdbe5] bg-[#fafdff] px-4 py-3.5 text-[#17345d] outline-none transition placeholder:text-[#91a3b6] focus:border-[#26858b] focus:ring-4 focus:ring-[#8fd9d1]/40";
@@ -72,6 +79,8 @@ export default function RegisterPage() {
               <div><label htmlFor="password" className="mb-2 block text-sm font-extrabold">Password</label><div className="relative"><input id="password" name="password" type={showPassword ? "text" : "password"} autoComplete="new-password" placeholder="Buat password" className={`${inputClass} pr-20`} aria-invalid={Boolean(errors.password)} /> <button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-extrabold text-[#26858b] hover:bg-[#dff3ef] focus:outline-none focus:ring-2 focus:ring-[#26858b]">{showPassword ? "Sembunyikan" : "Lihat"}</button></div>{errors.password && <p className="mt-1 text-xs font-bold text-[#c45b45]">{errors.password}</p>}</div>
               <div><label htmlFor="confirmPassword" className="mb-2 block text-sm font-extrabold">Konfirmasi Password</label><div className="relative"><input id="confirmPassword" name="confirmPassword" type={showConfirmPassword ? "text" : "password"} autoComplete="new-password" placeholder="Ulangi password kamu" className={`${inputClass} pr-20`} aria-invalid={Boolean(errors.confirmPassword)} /> <button type="button" onClick={() => setShowConfirmPassword((value) => !value)} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-extrabold text-[#26858b] hover:bg-[#dff3ef] focus:outline-none focus:ring-2 focus:ring-[#26858b]">{showConfirmPassword ? "Sembunyikan" : "Lihat"}</button></div>{errors.confirmPassword && <p className="mt-1 text-xs font-bold text-[#c45b45]">{errors.confirmPassword}</p>}</div>
               <button type="submit" className="w-full rounded-2xl bg-[#f4aa32] px-5 py-4 font-extrabold text-[#17345d] shadow-[0_5px_0_#d98b1d] transition hover:-translate-y-0.5 hover:bg-[#ffc451] focus:outline-none focus:ring-4 focus:ring-[#f4aa32]/40 active:translate-y-1 active:shadow-none">Daftar <span aria-hidden="true">→</span></button>
+            {submitError && <p role="alert" className="mt-3 text-sm font-bold text-[#c45b45]">{submitError}</p>}
+            {successMessage && <p role="status" className="mt-3 text-sm font-bold text-[#26858b]">{successMessage}</p>}
             </form>
             <div className="my-5 flex items-center gap-3 text-xs font-bold text-[#91a3b6]"><span className="h-px flex-1 bg-[#dce7ef]" /> atau <span className="h-px flex-1 bg-[#dce7ef]" /></div>
             <button type="button" onClick={() => setGoogleMessage(true)} className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-[#cbdbe5] bg-white px-5 py-3.5 font-extrabold text-[#365477] transition hover:border-[#17345d] hover:bg-[#fafdff] focus:outline-none focus:ring-4 focus:ring-[#8fd9d1]/40"><span className="grid size-6 place-items-center rounded-full bg-[#4285f4] text-sm font-black text-white">G</span> Daftar dengan Google</button>
