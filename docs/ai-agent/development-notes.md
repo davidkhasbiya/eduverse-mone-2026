@@ -839,3 +839,163 @@ Required environment variables are documented in `frontend/.env.example`; the ba
 Status: Completed
 
 Objective:
+
+#### Task: Gemini API
+
+Status: Completed
+
+Objective:
+#### Task: Minimal Gemini Backend Integration — 2026-10-13
+
+Implemented `@google/genai` in backend only. Added server-only Gemini service using `GEMINI_API_KEY` and required `GEMINI_MODEL`; the key is never returned or logged. Added protected endpoints `POST /api/ai/tutor` and `POST /api/ai/quiz/:slug` with request limits, output validation, timeout handling, and static-question fallback. Existing quiz routes, scoring, XP, schema, and RLS were not changed. Generated quiz answer keys are removed from the response; existing submit scoring remains backend-owned.
+
+Validation: backend `npx tsc --noEmit` passed after implementation. Gemini model listing/live API test was not completed because the API request returned `fetch failed`; do not treat this as a live Gemini test. Manual testing requires a model name available to the local key in `GEMINI_MODEL`.
+
+#### Diagnosis: Gemini connectivity — 2026-10-13
+
+- `GEMINI_API_KEY` exists locally; its value was not printed.
+- `GEMINI_MODEL` is absent from `backend/.env`, so no model can be selected safely.
+- DNS for `generativelanguage.googleapis.com` resolved successfully.
+- HTTPS connectivity failed with `Unable to connect to the remote server`; this indicates an environment/network/proxy/TLS path issue, not proof of an invalid API key.
+- The SDK request shape is valid for installed `@google/genai` 2.x. The Models API could not be reached live.
+- Gemini configuration is now resolved per request, so missing/unavailable Gemini does not prevent the static quiz fallback from running.
+- Added `backend/scripts/diagnose-gemini.mjs`; it reports only safe configuration/status metadata and never prints secrets.
+
+Retest by setting `GEMINI_MODEL` to a model obtained from the Gemini Models API for the local key, then run `npm run diagnose:gemini` from `backend`. A successful live test requires DNS, HTTPS/proxy access, valid credentials, and a listed model.
+
+#### Task: Gemini REST API Migration — 2026-10-13
+
+Replaced the backend `@google/genai` SDK with Node.js built-in `fetch` calling `generateContent`. The backend still reads `GEMINI_MODEL` as configured, sends `GEMINI_API_KEY` only through `x-goog-api-key`, enforces the existing 12-second timeout, validates the response shape and JSON, and keeps the static quiz fallback. The SDK dependency was removed with npm.
+
+Live REST verification was attempted with the real backend environment without printing secrets. Result: `sanitized network/request failure` (no HTTP status was received). This is not reported as a successful Gemini test.
+
+#### Task: Backend Quiz Page — 2026-10-13
+
+Implementasi tahap pertama selesai.
+Perubahan:
+- frontend/app/(authenticated)/quest/[slug]/play/page.tsx
+  - Fetch soal dari GET /api/quests/:slug/questions
+  - Navigasi lima soal dan indikator progres
+  - Validasi semua jawaban sebelum submit
+  - Submit ke POST /api/quests/:slug/submit
+  - Loading, error, slug/soal tidak valid, dan submit gagal ditangani
+  - Tidak menggunakan mock quiz lokal
+- frontend/app/(authenticated)/result/[slug]/page.tsx
+  - Menghapus hasil hardcoded 80 / 100, 4 / 5, dan +40 XP
+  - Menampilkan hasil nyata dari backend
+  - Tidak menampilkan hasil palsu jika belum ada submit
+  - Hasil sesi diteruskan melalui sessionStorage
+Verifikasi yang dijalankan:
+- Backend TypeScript check: berhasil
+- Frontend lint: berhasil
+- Frontend production build: berhasil
+- git diff --check: berhasil, dengan warning newline pada file lama yang tidak terkait
+Alur yang sudah berfungsi:
+1. Buka quest.
+2. Frontend mengambil lima soal dari backend.
+3. Siswa menjawab dan berpindah antar-soal.
+4. Jawaban dikirim ke backend.
+5. Backend menghitung skor, jawaban benar, dan XP.
+6. Result menampilkan respons submit aktual.
+Keterbatasan:
+- Hasil hanya disimpan sementara di sessionStorage; belum ada persistence Supabase.
+- Gemini dan chatbot tidak disentuh.
+- Tidak ada perubahan schema, SQL, migration, commit, atau push.
+- Perubahan lain yang sudah ada di working tree dipertahankan.
+
+#### Task: Persistence — 2026-10-13
+Persistence attempt berhasil diimplementasikan dengan perubahan minimal.
+
+File berubah:
+
+- `backend/src/routes/question.routes.ts`
+  - Submit kini dilindungi `requireAuth`.
+  - User ID diambil dari token terverifikasi.
+  - Slug dicocokkan ke UUID dari tabel `quests`.
+  - Validasi jumlah jawaban dan duplikasi question ID ditambahkan.
+  - Hasil disimpan ke `quiz_attempts`.
+  - Respons sukses hanya dikirim setelah insert berhasil.
+  - `correct_option` tetap tidak dikirim ke client.
+
+- `frontend/app/(authenticated)/quest/[slug]/play/page.tsx`
+  - Mengambil session Supabase.
+  - Mengirim access token sebagai `Authorization: Bearer ...` saat submit.
+
+Verifikasi:
+
+- Backend TypeScript check: berhasil.
+- Frontend lint: berhasil.
+- Frontend production build: berhasil.
+- `git diff --check`: selesai; hanya melaporkan blank line EOF yang sudah ada di `docs/prompt-log.md`.
+- Smoke test server endpoint: tidak dapat dijalankan karena runtime `tsx` gagal dengan error environment `uv_os_get_passwd returned ENOMEM`.
+
+Keterbatasan:
+
+- `user_progress` belum diperbarui karena unique constraint `(user_id, quest_id)` belum terkonfirmasi; tidak dilakukan pola select-then-insert/update yang rentan race condition.
+- Idempotensi submit dan pencegahan XP ganda belum dapat diklaim. Schema `quiz_attempts` belum menyediakan submission key/unique constraint untuk menjaminnya.
+- Perubahan existing lain di working tree dipertahankan. Tidak ada commit atau push.
+
+#### Task: Integrasi FE → BE → Supabase — 2026-10-13
+Implementasi integrasi FE → BE selesai secara bertahap.
+
+Perubahan utama:
+
+- Menambahkan helper terpusat:
+  - `frontend/lib/api.ts`
+  - Membaca `NEXT_PUBLIC_API_URL`.
+  - Mengirim access token Supabase untuk endpoint privat.
+  - Menangani `401` dan session kedaluwarsa secara konsisten.
+
+- Menambahkan endpoint backend privat:
+  - `GET /api/me/dashboard`
+  - `GET /api/me/progress`
+  - Menggunakan `requireAuth`.
+  - Identitas pengguna berasal dari token terverifikasi.
+  - Membaca `quiz_attempts` dan data quest dari Supabase/backend.
+
+- Halaman yang sudah menggunakan BE:
+  - Dashboard
+  - Math Kingdom
+  - Quest detail
+  - Result
+  - Progress
+  - Sidebar
+
+- `frontend/lib/mock-data.ts` sudah tidak digunakan dan dihapus.
+
+- Result tetap menggunakan hasil submit aktual dari gameplay, lalu mengambil metadata quest dari backend.
+
+Sumber data:
+
+- Quest/question: endpoint backend; data quest masih berupa konstanta backend sementara.
+- Dashboard XP dan jumlah attempt: `quiz_attempts`.
+- Progress/riwayat: `quiz_attempts`.
+- Identitas profile: `/api/auth/me` dari Supabase.
+- Sidebar: data dashboard dan profile backend.
+- Landing masih memiliki preview quest statis sebagai konten marketing publik.
+- `user_progress` belum diperbarui oleh submit, sehingga status progres personal masih terbatas pada data attempt dan status quest statis backend. Saya tidak membuat klaim persistence untuk `user_progress`.
+
+Verifikasi:
+
+- Backend TypeScript: lulus.
+- Frontend lint: lulus.
+- Frontend production build: lulus.
+- Tidak ada referensi frontend ke `mock-data` tersisa.
+- `git diff --check` masih melaporkan trailing whitespace lama di `docs/prompt-log.md`; tidak berasal dari perubahan integrasi dan tidak saya ubah.
+
+Tidak ada schema/migration, Gemini, commit, atau push yang dilakukan.
+
+#### Task: Finalisasi UI — 2026-10-13
+
+Finalisasi belum sepenuhnya selesai.
+
+Yang berhasil dilakukan:
+- Menambahkan komponen reusable [`Kibo.tsx`](E:/Lomba%20Hackathon/M-One%20Telkomsel%20Coding%20Competition%202026/eduverse-mone-2026/frontend/components/Kibo.tsx).
+- Menambahkan styling Kibo konsisten di [`globals.css`](E:/Lomba%20Hackathon/M-One%20Telkomsel%20Coding%20Competition%202026/eduverse-mone-2026/frontend/app/globals.css).
+- Menjaga backend, API, database, autentikasi, dan alur kuis tetap tidak berubah.
+- Lint berhasil.
+- Production build berhasil.
+- Tidak melakukan browser testing.
+- Tidak commit/push.
+
+Catatan penting: integrasi komponen reusable ke seluruh halaman belum terselesaikan; halaman masih memakai implementasi Kibo lama atau avatar “K” di beberapa area. `git diff --check` juga menemukan trailing whitespace lama di `docs/prompt-log.md`, bukan dari perubahan UI ini.

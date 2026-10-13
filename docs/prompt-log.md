@@ -10,6 +10,16 @@ Dokumen ini mencatat seluruh prompt yang digunakan selama proses development Edu
 
 ---
 
+## 2026-10-13
+
+### Prompt — Integrasi Gemini backend
+
+Status: Implemented minimal backend integration.
+
+Prompt digunakan: integrasikan Gemini API ke backend Express TypeScript ESM EduVerse untuk tutor Kibo dan generator kuis, dengan validasi output, auth, fallback static quiz, batas input/output, dan tanpa mengekspos key.
+
+Keputusan: SDK resmi `@google/genai` hanya dipasang di backend. Model tidak ditebak; `GEMINI_MODEL` harus diisi dengan model yang tersedia untuk API key. Pemeriksaan daftar model pada sesi ini gagal karena koneksi API `fetch failed`, sehingga live Gemini test belum diklaim.
+
 ## 2026-10-05
 
 ### Prompt 01 — Landing Page
@@ -17,6 +27,8 @@ Dokumen ini mencatat seluruh prompt yang digunakan selama proses development Edu
 Status: Planned
 
 Prompt:
+
+Migrated the backend Gemini integration from `@google/genai` to built-in Node.js `fetch` against REST `generateContent`. Preserved endpoint contracts, validation, timeout, rate limiting, and static quiz fallback. Live REST test status is documented only from the actual sanitized result.
 
 We are building EduVerse, an educational web app for elementary school students (SD), especially grades 4–6, for the M-ONE Telkomsel Coding Competition 2026.
 
@@ -348,7 +360,6 @@ After implementation:
 7. Update the relevant AI Agent development documentation with the actual work performed and validation results.
 
 Do not claim anything that was not actually implemented or tested.
-
 ### Prompt 14 — Supabase Backend Connection
 
 Status: Completed
@@ -4499,3 +4510,641 @@ Implemented Supabase email/password Auth for EduVerse.
 Actual changes: added the frontend Supabase client and public environment template; connected login and registration to `signInWithPassword`/`signUp`; added verified Bearer-token middleware and `GET /api/auth/me`; kept quest and quiz routes unchanged; and did not modify database schema, RLS, or triggers.
 
 Validation actually run: `backend/npx tsc --noEmit`, `frontend/npx tsc --noEmit`, and `frontend/npm run lint` all passed. `npm install @supabase/supabase-js` completed and reported 5 high-severity audit findings; no audit fix was run. A production build and live Auth request were not run.
+
+### Prompt 19 — Gemini API
+
+Status: Implemented
+
+Prompt:
+Integrasikan Gemini API ke backend EduVerse. Prioritaskan implementasi minimal yang bisa diuji karena deadline kompetisi 15 Oktober 2026 pukul 15.30 WIB.
+
+Konteks:
+- Backend Express + TypeScript ESM di `backend/`.
+- Frontend Next.js di `frontend/`.
+- Supabase Auth dan API quest/quiz sudah tersedia.
+- API key Gemini sudah dibuat dan disimpan secara lokal sebagai `GEMINI_API_KEY` di `backend/.env`.
+- Jangan meminta atau mencetak nilai API key.
+
+Tugas:
+1. Audit struktur backend, route, middleware, dan mekanisme quiz yang sudah ada.
+2. Instal SDK resmi `@google/genai` di backend saja.
+3. Buat service Gemini yang membaca `GEMINI_API_KEY` dari environment tanpa mengekspos key ke frontend, log, atau response.
+4. Implementasikan endpoint tutor Kibo untuk membantu siswa SD kelas 4–6 memahami aritmetika, pecahan, pola, dan aljabar dasar menggunakan bahasa Indonesia sederhana serta petunjuk bertahap.
+5. Implementasikan endpoint generator kuis yang menghasilkan variasi soal berdasarkan quest yang diizinkan server.
+6. Validasi output AI di backend: struktur JSON, jumlah opsi, kunci jawaban, penjelasan, dan kesesuaian topik. Jangan mengirim kunci jawaban ke frontend sebelum penilaian.
+7. Penilaian, skor, dan XP harus tetap menjadi tanggung jawab backend.
+8. Batasi panjang input dan output. Tangani timeout, respons tidak valid, rate limit, dan kegagalan Gemini. Jika generator gagal, gunakan soal statis yang sudah ada.
+9. Terapkan autentikasi dan validasi request sesuai pola proyek. Jangan mempercayai user ID dari request body.
+10. Tambahkan contoh konfigurasi tanpa key asli, perbarui `docs/prompt-log.md` dan `docs/ai-agent/development-notes.md`.
+11. Jalankan pemeriksaan TypeScript, lint, build, dan tes relevan. Jangan mengklaim live test jika belum dilakukan.
+12. Jangan mengubah schema/RLS Supabase, jangan merusak API quiz yang sudah ada, dan jangan commit atau push.
+
+Pilih model Gemini yang tersedia untuk API key dan akun ini. Jangan menebak model yang tidak tersedia. Mulai dengan implementasi backend minimal dan laporkan file berubah, endpoint, hasil pengujian, serta langkah tes manual.
+
+Jangan menambah fitur lain atau melakukan refactor besar. Integrasi data Supabase akan dikerjakan setelah integrasi Gemini dasar selesai.
+
+Do not claim anything that was not actually implemented or tested.
+
+Implementasi minimal Gemini backend selesai.
+Perubahan utama:
+- Instalasi @google/genai di backend saja.
+- Service server-only di backend/src/lib/gemini.ts.
+- Endpoint protected:
+  - POST /api/ai/tutor
+  - POST /api/ai/quiz/:slug
+- Validasi autentikasi, input, rate limit, timeout, JSON AI, opsi, kunci jawaban, penjelasan, dan topik.
+- Kunci jawaban tidak dikirim ke frontend.
+- Generator otomatis fallback ke soal static jika Gemini gagal.
+- Scoring dan XP quiz lama tetap di backend.
+- Ditambahkan GEMINI_MODEL ke .env.example; model tidak ditebak karena pemeriksaan model API gagal dengan fetch failed.
+- Dokumentasi diperbarui.
+File utama:
+- backend/src/lib/gemini.ts
+- backend/src/routes/ai.routes.ts
+- backend/src/index.ts
+- backend/package.json
+- backend/package-lock.json
+- backend/.env.example
+- docs/prompt-log.md
+- docs/ai-agent/development-notes.md
+Validasi:
+- Backend TypeScript: lulus.
+- Frontend lint: lulus.
+- Frontend production build: lulus.
+- Live Gemini test: belum dilakukan karena koneksi API mengembalikan fetch failed.
+- Backend lint/test: tidak tersedia sebagai script proyek.
+
+### Prompt 20 — Migrate Gemini API
+
+Status: Planned
+
+Prompt:Kita ingin segera deploy EduVerse malam ini. Migrasikan integrasi Gemini dari SDK `@google/genai` ke REST API menggunakan `fetch` bawaan Node.js.
+
+Konteks:
+- Repo memiliki frontend Next.js dan backend Express TypeScript.
+- Integrasi Gemini berada di `backend/src/lib/gemini.ts`.
+- Endpoint AI: `POST /api/ai/tutor` dan `POST /api/ai/quiz/:slug`.
+- Konfigurasi `GEMINI_API_KEY` dan `GEMINI_MODEL` berada di `backend/.env`.
+- Tes SDK sebelumnya gagal dengan `TypeError: fetch failed`, penyebab `AggregateError`, kode `EACCES`. Tes `fetch` Node.js juga pernah mengalami error serupa, tetapi tes lain pernah berhasil menghasilkan HTTP 404.
+- Kuis statis harus tetap menjadi fallback jika Gemini gagal.
+
+Tugas:
+1. Periksa implementasi Gemini dan semua pemanggilnya sebelum mengubah kode.
+2. Ganti penggunaan SDK Gemini dengan REST API `generateContent` melalui `fetch` bawaan Node.js. Gunakan model dari `GEMINI_MODEL`; jangan mengganti model secara asal.
+3. Simpan API key hanya di backend. Gunakan header `x-goog-api-key`, jangan mencetak key atau menyertakannya dalam pesan error/log.
+4. Pertahankan kontrak endpoint, validasi input dan output, timeout, rate limit, penanganan error, serta fallback kuis statis yang sudah ada.
+5. Periksa struktur respons Gemini dan tangani respons kosong, HTTP non-2xx, JSON tidak valid, serta respons yang tidak sesuai skema.
+6. Setelah perubahan, jalankan tes REST API minimal menggunakan konfigurasi environment backend yang sebenarnya. Jangan mengklaim tes live berhasil jika request gagal. Laporkan status HTTP atau error yang sudah disanitasi.
+7. Jika migrasi berhasil dan SDK tidak lagi digunakan, hapus dependensi `@google/genai` dari `backend/package.json` dengan package manager yang sesuai.
+8. Jalankan `tsc --noEmit`, pemeriksaan lint/build yang relevan, dan `git diff --check`.
+9. Perbaiki blank line EOF yang sebelumnya ditemukan di `docs/ai-agent/development-notes.md` dan `docs/prompt-log.md`, lalu dokumentasikan migrasi dan hasil tes secara jujur di dokumentasi AI yang sudah ada.
+10. Jangan mengubah fitur lain, jangan menghapus fallback, jangan commit atau push.
+
+Berikan ringkasan file yang diubah, hasil pengujian, dan langkah deploy berikutnya. Prioritaskan solusi minimal yang aman untuk production.
+
+Do not claim anything that was not actually implemented or tested.
+
+Migrated the backend Gemini integration from `@google/genai` to built-in Node.js `fetch` against REST `generateContent`. Preserved endpoint contracts, validation, timeout, rate limiting, and static quiz fallback. Live REST test status is documented only from the actual sanitized result.
+
+Migrasi Gemini ke REST API selesai.
+Perubahan utama:
+- [backend/src/lib/gemini.ts](E:/Lomba Hackathon/M-One Telkomsel Coding Competition 2026/eduverse-mone-2026/backend/src/lib/gemini.ts)
+  - Menggunakan fetch bawaan Node.js.
+  - Memakai GEMINI_MODEL tanpa mengganti model.
+  - API key hanya dikirim lewat x-goog-api-key.
+  - Menangani timeout, HTTP non-2xx, JSON invalid, respons kosong, dan struktur respons tidak valid.
+- SDK @google/genai sudah dihapus dari konfigurasi dependency backend.
+- Kontrak endpoint, validasi, rate limit, timeout, dan static quiz fallback tetap dipertahankan.
+- Dokumentasi AI diperbarui:
+  - docs/ai-agent/development-notes.md
+  - docs/prompt-log.md
+- Blank line EOF sudah diperbaiki.
+- Tidak ada commit atau push.
+Pengujian:
+- Backend tsc --noEmit: berhasil.
+- Frontend lint: berhasil.
+- Frontend build: kompilasi dan type-check berhasil.
+- git diff --check: berhasil; hanya warning line-ending yang sudah ada.
+- Tes REST langsung dengan environment backend aktual: gagal dengan sanitized network/request failure; tidak ada HTTP status yang diterima. Ini bukan live test Gemini yang berhasil dan kemungkinan terkait konektivitas/proxy/TLS lingkungan.
+Langkah deploy berikutnya:
+1. Pastikan server production dapat mengakses generativelanguage.googleapis.com.
+2. Isi GEMINI_MODEL dengan model yang benar-benar tersedia untuk API key tersebut.
+3. Jalankan backend dan uji endpoint terautentikasi.
+4. Pastikan kuis tetap mengembalikan source: "static-fallback" ketika Gemini tidak tersedia.
+
+### Prompt 21 — Backend Quiz Page
+
+Status: Implemented
+
+Prompt:
+
+Berdasarkan hasil audit EduVerse, implementasikan tahap pertama: gameplay kuis statis end-to-end. Jangan mengerjakan integrasi Gemini atau chatbot pada tahap ini.
+
+Tujuan:
+1. Halaman `/quest/[slug]/play` menampilkan lima soal statis yang sesuai dengan quest.
+2. Frontend mengambil soal melalui `GET /api/quests/:slug/questions`, bukan memakai mock quiz lokal.
+3. Siswa dapat memilih jawaban dan melihat navigasi/progres pengerjaan soal.
+4. Saat selesai, frontend mengirim jawaban ke `POST /api/quests/:slug/submit`.
+5. Backend tetap menjadi satu-satunya pihak yang menentukan jawaban benar, skor, dan XP.
+6. Halaman result menerima hasil submit yang nyata; hapus result hardcoded `80 / 100`, `4 / 5`, dan `+40 XP` dari alur gameplay.
+7. Tangani loading, error, quest slug tidak valid, dan submit gagal tanpa menampilkan hasil palsu.
+8. Jangan membocorkan `correctOption` melalui endpoint pengambilan soal.
+9. Pertahankan desain EduVerse dan gunakan komponen yang sudah ada bila memungkinkan.
+
+Batasan:
+- Kuis tetap menggunakan data statis di backend untuk lomba.
+- Jangan mengintegrasikan Gemini.
+- Jangan mengubah schema atau menjalankan SQL/migration.
+- Jangan mengklaim hasil tersimpan permanen karena persistence Supabase belum dikerjakan pada tahap ini.
+- Jangan membuat commit atau push.
+
+Sebelum mengubah kode, periksa kontrak request/response endpoint saat ini dan routing halaman result. Implementasikan perubahan sekecil mungkin agar alur kuis bisa dimainkan dari awal sampai hasil.
+
+Setelah selesai, jalankan backend TypeScript check, frontend lint/build, dan `git diff --check`. Laporkan file yang berubah, alur yang sudah berfungsi, tes yang benar-benar dijalankan, serta keterbatasan yang masih ada.
+
+Implementasi tahap pertama selesai.
+
+Perubahan:
+
+- `frontend/app/(authenticated)/quest/[slug]/play/page.tsx`
+  - Fetch soal dari `GET /api/quests/:slug/questions`
+  - Navigasi lima soal dan indikator progres
+  - Validasi semua jawaban sebelum submit
+  - Submit ke `POST /api/quests/:slug/submit`
+  - Loading, error, slug/soal tidak valid, dan submit gagal ditangani
+  - Tidak menggunakan mock quiz lokal
+
+- `frontend/app/(authenticated)/result/[slug]/page.tsx`
+  - Menghapus hasil hardcoded `80 / 100`, `4 / 5`, dan `+40 XP`
+  - Menampilkan hasil nyata dari backend
+  - Tidak menampilkan hasil palsu jika belum ada submit
+  - Hasil sesi diteruskan melalui `sessionStorage`
+
+Verifikasi yang dijalankan:
+
+- Backend TypeScript check: berhasil
+- Frontend lint: berhasil
+- Frontend production build: berhasil
+- `git diff --check`: berhasil, dengan warning newline pada file lama yang tidak terkait
+
+Alur yang sudah berfungsi:
+
+1. Buka quest.
+2. Frontend mengambil lima soal dari backend.
+3. Siswa menjawab dan berpindah antar-soal.
+4. Jawaban dikirim ke backend.
+5. Backend menghitung skor, jawaban benar, dan XP.
+6. Result menampilkan respons submit aktual.
+
+Keterbatasan:
+
+- Hasil hanya disimpan sementara di `sessionStorage`; belum ada persistence Supabase.
+- Gemini dan chatbot tidak disentuh.
+- Tidak ada perubahan schema, SQL, migration, commit, atau push.
+- Perubahan lain yang sudah ada di working tree dipertahankan.
+
+### Prompt 22 — Persistence Supabase
+
+Status: Implemented
+
+Prompt:
+
+Lanjutkan pengembangan EduVerse ke tahap kedua: persistence hasil kuis dan progres siswa menggunakan Supabase.
+
+Konteks:
+- Gameplay kuis statis end-to-end baru selesai.
+- Frontend mengambil soal dari `GET /api/quests/:slug/questions` dan mengirim jawaban ke `POST /api/quests/:slug/submit`.
+- Backend menghitung skor, jumlah jawaban benar, dan XP.
+- Hasil saat ini hanya diteruskan melalui `sessionStorage`.
+- Autentikasi Supabase sudah tersedia, dan backend memiliki middleware untuk memverifikasi access token.
+- Data soal tetap statis untuk kebutuhan kompetisi. Jangan integrasikan Gemini pada tahap ini.
+
+Tahap A — audit sebelum implementasi:
+1. Periksa schema Supabase yang sudah digunakan oleh proyek, berdasarkan file SQL/dokumentasi yang tersedia di repo dan kode saat ini.
+2. Identifikasi struktur aktual tabel `profiles`, `quests`, `questions`, `user_progress`, dan `quiz_attempts` jika tabel tersebut memang ada.
+3. Periksa relasi, kolom wajib, unique constraint, dan kebijakan RLS yang dapat diverifikasi dari sumber yang tersedia.
+4. Jangan mengasumsikan struktur tabel atau kebijakan RLS yang belum terbukti. Jangan menjalankan SQL atau migration baru.
+5. Jika schema aktual tidak dapat dipastikan, berhenti pada audit dan laporkan informasi yang perlu diperiksa di Supabase Dashboard sebelum melanjutkan perubahan database.
+
+Tahap B — implementasi, hanya jika schema yang diperlukan sudah dapat dipastikan:
+1. Pastikan `POST /api/quests/:slug/submit` mewajibkan autentikasi dan memperoleh user ID dari token Supabase yang sudah diverifikasi, bukan dari request body.
+2. Simpan hasil percobaan kuis ke `quiz_attempts` sesuai schema aktual.
+3. Perbarui `user_progress` secara konsisten berdasarkan hasil percobaan dan XP yang diberikan backend.
+4. Cegah XP terakumulasi dua kali hanya karena request submit yang sama dikirim ulang, jika struktur schema mendukung mekanisme tersebut.
+5. Tangani kegagalan penyimpanan dengan jelas. Jangan mengembalikan respons sukses jika hasil belum tersimpan sebagaimana dijanjikan.
+6. Pertahankan kontrak API yang diperlukan frontend dan pastikan result tetap menampilkan hasil submit aktual.
+7. Jangan mengubah jawaban benar yang dikirim ke client; `correctOption` harus tetap tersembunyi pada endpoint pengambilan soal.
+8. Jangan membuat data progres palsu atau mengklaim persistence permanen jika penulisan database gagal.
+
+Batasan:
+- Jangan mengintegrasikan Gemini/chatbot.
+- Jangan mengubah schema, menjalankan SQL/migration, atau menonaktifkan RLS.
+- Jangan melakukan refactor besar atau menghapus perubahan lain di working tree.
+- Jangan commit atau push.
+
+Verifikasi:
+- Backend TypeScript check.
+- Frontend lint dan production build.
+- `git diff --check`.
+- Tambahkan atau jalankan pengujian endpoint yang relevan jika memungkinkan.
+- Laporkan file yang berubah, hasil pengujian yang benar-benar dijalankan, keterbatasan, dan apakah schema/RLS telah berhasil diverifikasi.
+
+Utamakan implementasi kecil, aman, dan stabil untuk demo kompetisi.
+
+Persistence attempt berhasil diimplementasikan dengan perubahan minimal.
+
+File berubah:
+
+- `backend/src/routes/question.routes.ts`
+  - Submit kini dilindungi `requireAuth`.
+  - User ID diambil dari token terverifikasi.
+  - Slug dicocokkan ke UUID dari tabel `quests`.
+  - Validasi jumlah jawaban dan duplikasi question ID ditambahkan.
+  - Hasil disimpan ke `quiz_attempts`.
+  - Respons sukses hanya dikirim setelah insert berhasil.
+  - `correct_option` tetap tidak dikirim ke client.
+
+- `frontend/app/(authenticated)/quest/[slug]/play/page.tsx`
+  - Mengambil session Supabase.
+  - Mengirim access token sebagai `Authorization: Bearer ...` saat submit.
+
+Verifikasi:
+
+- Backend TypeScript check: berhasil.
+- Frontend lint: berhasil.
+- Frontend production build: berhasil.
+- `git diff --check`: selesai; hanya melaporkan blank line EOF yang sudah ada di `docs/prompt-log.md`.
+- Smoke test server endpoint: tidak dapat dijalankan karena runtime `tsx` gagal dengan error environment `uv_os_get_passwd returned ENOMEM`.
+
+Keterbatasan:
+
+- `user_progress` belum diperbarui karena unique constraint `(user_id, quest_id)` belum terkonfirmasi; tidak dilakukan pola select-then-insert/update yang rentan race condition.
+- Idempotensi submit dan pencegahan XP ganda belum dapat diklaim. Schema `quiz_attempts` belum menyediakan submission key/unique constraint untuk menjaminnya.
+- Perubahan existing lain di working tree dipertahankan. Tidak ada commit atau push.
+
+### Prompt 23 — Testing 
+
+Status: Implemented
+
+Prompt:
+Lakukan pemeriksaan akhir terarah terhadap perubahan persistence attempt EduVerse yang baru dibuat.
+
+Prioritas:
+1. Periksa diff `backend/src/routes/question.routes.ts` dan `frontend/app/(authenticated)/quest/[slug]/play/page.tsx`.
+2. Pastikan route submit benar-benar memasang `requireAuth`, user ID hanya berasal dari token terverifikasi, dan frontend mengirim token dari session Supabase yang valid.
+3. Cocokkan nama kolom insert `quiz_attempts` dengan schema yang tersedia di repository dan bukti dashboard. Jangan mengasumsikan kolom yang tidak terverifikasi.
+4. Pastikan insert gagal menghasilkan HTTP error, bukan respons sukses palsu.
+5. Periksa penanganan session kedaluwarsa, respons error backend, serta kompatibilitas respons submit dengan halaman result.
+6. Perbaiki bug nyata yang ditemukan dengan perubahan minimal.
+
+Jangan mengulang audit schema secara umum. Jangan mengubah schema, menjalankan SQL/migration, mengintegrasikan Gemini, menghapus perubahan lain, atau commit/push.
+
+Setelah itu, jalankan pemeriksaan TypeScript backend, lint dan production build frontend, serta git diff --check. Jika runtime test masih gagal karena environment, laporkan error persisnya dan jangan mengklaim endpoint sudah teruji. Akhiri dengan ringkasan kesiapan deployment dan blocker yang benar-benar tersisa.
+
+Pemeriksaan akhir selesai.
+
+- `question.routes.ts`
+  - `POST /:slug/submit` memasang `requireAuth`.
+  - `user_id` hanya berasal dari `req.authUser.id` setelah verifikasi token Supabase.
+  - Insert `quiz_attempts` memakai kolom yang terdokumentasi: `user_id`, `quest_id`, `score`, `correct_answers`, `total_questions`, `xp_earned`.
+  - Kegagalan lookup atau insert mengembalikan HTTP `500`, bukan sukses palsu.
+
+- Frontend
+  - Token dikirim dari session Supabase.
+  - Session kedaluwarsa kini menghasilkan pesan khusus dan session dibersihkan.
+  - Payload result rusak di `sessionStorage` tidak lagi menyebabkan crash halaman result.
+
+Validasi:
+
+- Backend TypeScript: lulus.
+- Frontend lint: lulus.
+- Frontend production build: lulus.
+- `git diff --check` pada file terkait: lulus.
+- Global `git diff --check`: masih melaporkan whitespace lama di `docs/prompt-log.md`; tidak saya ubah.
+
+Kesiapan deployment: kode persistence siap secara TypeScript/build. Blocker tersisa: endpoint belum diuji runtime terhadap Supabase nyata, sehingga keberhasilan insert di environment deployment belum dapat diklaim. Schema diverifikasi dari dokumentasi repository; tidak ada perubahan schema atau migration yang dilakukan.
+
+Bug diperbaiki.
+
+Penyebab pasti:
+
+- `"Authentication required"` berasal dari respons HTTP `401` middleware backend `requireAuth`, bukan dari UI frontend.
+- Halaman play sebelumnya baru memanggil `getSession()` saat submit dan tidak menunggu proses pemulihan session Supabase selesai. Akibatnya request dapat dikirim tanpa Bearer token.
+
+Perubahan:
+
+- `frontend/app/(authenticated)/quest/[slug]/play/page.tsx`
+  - Menunggu `getSession()` dan `onAuthStateChange`.
+  - Soal baru diambil setelah session selesai diperiksa.
+  - Pengguna tanpa session diarahkan ke `/login` dengan URL kembali.
+  - Submit tetap mengirim access token asli.
+  - Respons `401` melakukan `signOut()` dan menampilkan pesan session kedaluwarsa.
+
+- `frontend/components/LoginPage.tsx`
+  - Setelah login berhasil, kembali ke URL quest sebelumnya bila tersedia.
+  - Tidak memakai secret key atau token palsu.
+
+Backend `requireAuth` tidak diubah atau dinonaktifkan.
+
+Verifikasi:
+
+- Backend TypeScript: lulus.
+- Frontend lint: lulus.
+- Frontend production build: lulus.
+- Targeted `git diff --check`: lulus.
+- Global `git diff --check`: masih melaporkan trailing whitespace lama di `docs/prompt-log.md`; tidak saya ubah.
+
+Runtime Supabase belum diuji langsung, jadi keberhasilan endpoint terhadap session/token production belum dapat diklaim dari environment ini.
+
+
+### Prompt 24 — Integrasi FE, BE, Supabase
+
+Status: Implemented
+
+Prompt:
+Fokus utama sekarang adalah menghilangkan hardcode/mock data dari seluruh frontend EduVerse dan menjadikan backend (BE) sebagai satu-satunya sumber data untuk UI.
+
+Stack:
+- Frontend: Next.js App Router + TypeScript.
+- Backend: Express + TypeScript.
+- Database/Auth: Supabase.
+- Repository sudah memiliki API quest, question, submit, auth/me, dan endpoint AI.
+- Gameplay kuis sudah mengambil soal dari BE dan submit menggunakan autentikasi.
+- Hasil submit disimpan ke quiz_attempts, tetapi user_progress belum diperbarui.
+- Jangan mengintegrasikan Gemini pada pekerjaan ini.
+
+TAHAP 1 — AUDIT SELURUH FRONTEND DAN BACKEND
+Periksa semua halaman, komponen, hooks, lib, API routes, mock-data, konstanta, dan endpoint backend.
+
+Buat daftar konkret:
+1. Semua data hardcode/mock yang masih ditampilkan pada landing, dashboard, Math Kingdom, quest detail, play, result, progress, profile, sidebar, dan komponen lainnya.
+2. Data mana yang hanya berupa copy/konfigurasi UI dan boleh tetap statis, misalnya label navigasi, ilustrasi, dan teks pemasaran.
+3. Data mana yang harus dinamis, seperti identitas pengguna, daftar quest, status quest, XP, skor, riwayat attempt, progress, badge, dan statistik.
+4. Endpoint BE yang sudah tersedia, endpoint yang masih perlu dibuat, serta tabel Supabase yang digunakan masing-masing.
+5. Identifikasi kontrak request/response aktual sebelum mengubah kode.
+
+TAHAP 2 — IMPLEMENTASI INTEGRASI FE → BE
+Setelah audit singkat, langsung implementasikan integrasi secara bertahap, bukan berhenti pada laporan.
+
+- Buat atau gunakan helper API frontend terpusat yang membaca NEXT_PUBLIC_API_URL dan mengirim access token Supabase ketika endpoint membutuhkan autentikasi.
+- Dashboard harus mengambil statistik aktual dari BE.
+- Math Kingdom harus mengambil daftar quest dan status dari BE.
+- Quest detail harus mengambil detail quest dari BE.
+- Result harus menggunakan hasil submit aktual, bukan konstanta mock.
+- Progress harus mengambil riwayat attempt dan progres aktual dari BE.
+- Profile/sidebar harus menggunakan identitas dan statistik pengguna yang aktual.
+- Hapus ketergantungan pada mock-data untuk data bisnis yang sudah memiliki sumber backend.
+- Pertahankan copy, aset, warna, layout, dan komponen UI yang tidak terkait data.
+- Tambahkan loading, error, empty state, dan penanganan session kedaluwarsa yang konsisten.
+- Jangan menggunakan fallback mock yang diam-diam menampilkan data palsu ketika API gagal.
+- Jangan menampilkan statistik nol seolah-olah merupakan data nyata jika request gagal.
+
+SUMBER DATA:
+- Jika datanya memang sudah tersimpan di Supabase, BE harus membaca dari Supabase.
+- Jika datanya masih statis di BE, frontend boleh mengambilnya melalui BE untuk sementara, tetapi tandai dengan jelas sebagai data statis.
+- Jangan mengklaim data persisten jika belum tersimpan.
+- Jangan mengubah schema atau menjalankan SQL/migration tanpa bukti constraint dan kebutuhan yang jelas.
+- Jangan membuat badge, XP, progress, atau riwayat palsu.
+- Pastikan semua endpoint privat menggunakan identitas dari token yang telah diverifikasi.
+
+BATASAN:
+- Jangan mengintegrasikan Gemini/chatbot.
+- Jangan mendesain ulang UI.
+- Jangan menghapus perubahan lain pada working tree.
+- Jangan commit atau push.
+
+VERIFIKASI:
+- Backend TypeScript check.
+- Frontend lint dan production build.
+- git diff --check.
+- Uji atau periksa setiap kontrak endpoint yang berubah.
+- Laporkan file yang berubah, halaman yang sudah menggunakan API BE, sumber data setiap fitur, mock yang masih tersisa, dan keterbatasan persistence.
+- Jika scope terlalu besar untuk satu perubahan aman, selesaikan secara berurutan: dashboard + quest list/detail, lalu result + progress + profile. Jangan merusak gameplay yang sudah berjalan.
+
+Implementasi integrasi FE → BE selesai secara bertahap.
+
+Perubahan utama:
+
+- Menambahkan helper terpusat:
+  - `frontend/lib/api.ts`
+  - Membaca `NEXT_PUBLIC_API_URL`.
+  - Mengirim access token Supabase untuk endpoint privat.
+  - Menangani `401` dan session kedaluwarsa secara konsisten.
+
+- Menambahkan endpoint backend privat:
+  - `GET /api/me/dashboard`
+  - `GET /api/me/progress`
+  - Menggunakan `requireAuth`.
+  - Identitas pengguna berasal dari token terverifikasi.
+  - Membaca `quiz_attempts` dan data quest dari Supabase/backend.
+
+- Halaman yang sudah menggunakan BE:
+  - Dashboard
+  - Math Kingdom
+  - Quest detail
+  - Result
+  - Progress
+  - Sidebar
+
+- `frontend/lib/mock-data.ts` sudah tidak digunakan dan dihapus.
+
+- Result tetap menggunakan hasil submit aktual dari gameplay, lalu mengambil metadata quest dari backend.
+
+Sumber data:
+
+- Quest/question: endpoint backend; data quest masih berupa konstanta backend sementara.
+- Dashboard XP dan jumlah attempt: `quiz_attempts`.
+- Progress/riwayat: `quiz_attempts`.
+- Identitas profile: `/api/auth/me` dari Supabase.
+- Sidebar: data dashboard dan profile backend.
+- Landing masih memiliki preview quest statis sebagai konten marketing publik.
+- `user_progress` belum diperbarui oleh submit, sehingga status progres personal masih terbatas pada data attempt dan status quest statis backend. Saya tidak membuat klaim persistence untuk `user_progress`.
+
+Verifikasi:
+
+- Backend TypeScript: lulus.
+- Frontend lint: lulus.
+- Frontend production build: lulus.
+- Tidak ada referensi frontend ke `mock-data` tersisa.
+- `git diff --check` masih melaporkan trailing whitespace lama di `docs/prompt-log.md`; tidak berasal dari perubahan integrasi dan tidak saya ubah.
+
+Tidak ada schema/migration, Gemini, commit, atau push yang dilakukan.
+
+### Prompt 25 — Finalisasi UI
+
+Status: Implemented
+
+Prompt:
+Lakukan finalisasi UI EduVerse berdasarkan kondisi komponen dan halaman yang sudah ada. Fokus pada konsistensi visual dan UX, tanpa redesign total.
+
+**1. Audit sebelum mengubah kode**
+- Periksa struktur frontend, shared layout, sidebar, komponen quest, halaman Progress, dan API yang sudah tersedia.
+- Pertahankan palet warna navy, kuning, mint, cream, outline tegas, rounded cards, dan identitas visual EduVerse.
+- Gunakan komponen dan data yang sudah ada jika memungkinkan.
+- Jangan mengubah kontrak API, autentikasi, logika penilaian, atau mekanisme persistence yang sudah berjalan.
+
+**2. Rapikan sidebar**
+- Perbaiki mode expanded dan minimized.
+- Mode minimized harus menampilkan ikon yang sejajar, logo ringkas, active state yang jelas, tooltip, dan avatar tanpa teks terpotong atau elemen bertumpuk.
+- Pastikan tombol expand/collapse tetap berfungsi.
+- Pertahankan drawer untuk layar mobile dan pastikan tidak mengganggu konten utama.
+
+**3. Tambahkan UI chatbot Kibo**
+- Tambahkan tombol Kibo yang konsisten pada Math Kingdom dan halaman detail quest.
+- Saat dibuka, tampilkan panel percakapan, pesan sambutan, contoh pertanyaan, kolom input, dan status loading/error.
+- Gunakan endpoint backend AI yang benar-benar tersedia setelah memeriksa kontraknya.
+- Jangan mengirim request dengan payload tebakan. Jangan menampilkan jawaban sukses palsu.
+- Jika integrasi AI belum dapat digunakan, sediakan fallback UI yang jujur dan tidak mengganggu aktivitas utama.
+- Pada detail quest, Kibo juga boleh tampil sebagai ilustrasi atau pesan kontekstual di hero, tanpa menutupi judul dan tombol Mulai Quest.
+
+**4. Jadikan Progress sebagai dashboard belajar**
+- Ringkasan utama harus menonjolkan XP, jumlah attempt, jumlah quest unik yang dikerjakan jika dapat dihitung, serta statistik belajar yang benar-benar tersedia.
+- Pertahankan riwayat attempt dengan judul quest, skor, jawaban benar, XP, dan tanggal.
+- Nama dan email menjadi informasi sekunder, bukan fokus halaman.
+- Ambil data dari backend yang sudah tersedia. Jangan menambahkan angka atau badge statis yang terlihat seperti pencapaian nyata.
+- Sediakan loading, error, dan empty state.
+
+**5. Responsivitas dan aksesibilitas**
+- Periksa desktop dan mobile untuk semua perubahan.
+- Pastikan tombol, tooltip, input chat, focus state, kontras, dan navigasi keyboard usable.
+- Hindari horizontal overflow dan teks terpotong.
+- Pertahankan layout dan fitur yang sudah bekerja.
+
+**6. Batasan**
+- Jangan redesign semua halaman dari nol.
+- Jangan menambahkan leaderboard, dunia baru, atau fitur besar lainnya.
+- Jangan mengubah schema database atau menjalankan SQL/migration.
+- Jangan menghapus integrasi Gemini yang sudah ada.
+- Jangan membuat commit atau push.
+
+**7. Verifikasi**
+- Jalankan backend TypeScript check, frontend lint, frontend production build, dan git diff --check.
+- Periksa perubahan agar tidak merusak gameplay kuis, autentikasi, hasil submit, dan Progress.
+- Laporkan file yang berubah, hasil verifikasi aktual, serta keterbatasan integrasi Kibo yang masih ada.
+
+Finalisasi UI/UX EduVerse selesai secara inkremental tanpa redesign total, perubahan API, schema, migration, atau commit.
+
+Ringkasan perubahan:
+
+- Sidebar:
+  - Menambahkan navigasi Profile.
+  - Mode minimized memiliki ikon, active state, tooltip, logo ringkas, dan akses profile.
+  - Animasi collapse/expand dibuat lebih halus.
+  - Drawer mobile tetap digunakan dan link menutup drawer setelah dipilih.
+
+- Profile:
+  - Menambahkan route `/profile`.
+  - Menggunakan endpoint aktual `GET /api/auth/me`.
+  - Menampilkan nama, email, avatar/inisial, tanggal bergabung jika tersedia.
+  - Menyediakan link Progress dan Math Kingdom.
+  - Menampilkan empty state jujur untuk badge karena sistem badge belum tersedia.
+  - Menyediakan logout Supabase dengan loading dan error handling.
+  - Tidak menambahkan fitur edit profile karena belum ada endpoint persistence yang aman.
+
+- Kibo:
+  - Tetap tersedia di Math Kingdom dan detail quest.
+  - Menggunakan endpoint aktual `POST /api/ai/tutor`.
+  - Payload menggunakan `question` dan `topic` yang valid.
+  - Mendukung loading, error, contoh pertanyaan, input, dan respons kontekstual quest.
+  - Tidak menampilkan respons sukses palsu.
+
+- Progress:
+  - Tetap memakai data backend aktual.
+  - Menampilkan XP, jumlah attempt, dan jumlah quest unik.
+  - Memisahkan fungsi Progress dari Profile.
+
+File yang ditambahkan atau diubah:
+
+- `frontend/components/ProfilePage.tsx`
+- `frontend/app/(authenticated)/profile/page.tsx`
+- `frontend/components/layout/Sidebar.tsx`
+- `frontend/components/KiboChat.tsx`
+- `frontend/components/ProgressPage.tsx`
+- `frontend/components/MathKingdomPage.tsx`
+- `frontend/app/(authenticated)/quest/[slug]/page.tsx`
+
+Verifikasi aktual:
+
+- Backend TypeScript check: lulus.
+- Frontend lint: lulus.
+- Frontend production build: lulus.
+- Route `/profile` berhasil masuk dalam hasil build.
+- Gameplay, submit, result, auth, dan Progress tidak diubah kontraknya.
+- `git diff --check` masih melaporkan trailing whitespace existing di `docs/prompt-log.md`; tidak berasal dari perubahan UI ini.
+- Peringatan line ending CRLF/LF berasal dari working tree Windows.
+
+Keterbatasan:
+
+- Belum ada persistence edit profile.
+- Sistem badge dan level belum tersedia di backend, sehingga tidak diklaim sebagai data nyata.
+- Kibo bergantung pada sesi autentikasi, backend AI, Gemini, dan rate limit.
+- Browser/device testing manual belum dijalankan; verifikasi responsivitas dilakukan melalui struktur responsive class, lint, type check, dan production build.
+- Seluruh perubahan existing yang belum di-commit dipertahankan. Tidak ada commit atau push.
+
+### Prompt 26 — Desain Kibo AI
+
+Status: Implemented
+
+Prompt:
+Lakukan finalisasi visual UI/UX seluruh halaman EduVerse secara konsisten. Fokus utama adalah memperkuat identitas visual melalui karakter Kibo dan ilustrasi 2D, bukan redesign total.
+
+## Referensi visual
+Gunakan gambar Kibo yang diberikan pengguna sebagai acuan utama:
+- Robot mungil, bentuk membulat.
+- Warna mint/turquoise, outline navy tebal, aksen kuning.
+- Ekspresi ramah dan sederhana.
+- Gaya ilustrasi 2D, clean, playful, cocok untuk siswa SD kelas 4–6.
+- Pertahankan palet, proporsi, dan ciri khas Kibo di seluruh halaman.
+
+## 1. Audit terlebih dahulu
+Periksa landing dan register sebagai referensi visual yang sudah ada. Audit dashboard, Math Kingdom, detail quest, gameplay, chatbot Kibo, result, progress, dan profile.
+
+Identifikasi aset ilustrasi yang sudah tersedia di repository. Gunakan kembali aset yang sesuai; jangan mengganti identitas Kibo dengan karakter robot lain yang tidak konsisten.
+
+## 2. Terapkan ilustrasi ke semua halaman
+- Dashboard: Kibo menyambut siswa, ilustrasi kecil pada ringkasan belajar, dan aksen petualangan.
+- Math Kingdom: ilustrasi dunia matematika, quest, dan Kibo sebagai pemandu.
+- Detail quest: Kibo memberikan briefing singkat sebelum quest dimulai.
+- Gameplay: Kibo hadir sebagai pendamping kuis, dengan panel petunjuk yang tidak mengganggu fokus soal.
+- Chatbot Kibo: avatar Kibo terlihat pada header dan setiap area percakapan yang relevan. Pertahankan status loading dan error yang jujur.
+- Result: Kibo bereaksi sesuai hasil, ditemani ilustrasi reward atau motivasi. Jangan mengubah skor maupun XP aktual dari backend.
+- Progress: Kibo mendukung ringkasan perkembangan dan riwayat belajar. Halaman ini harus berbeda jelas dari Profile.
+- Profile: tampilkan avatar/ilustrasi Kibo sebagai aksen pendamping profil, tetapi identitas utama tetap siswa.
+
+## 3. Aturan implementasi
+- Pertahankan autentikasi, API, kontrak request/response, database, dan alur kuis.
+- Jangan mengubah data dinamis menjadi hardcode demi visual.
+- Jangan membuat statistik, badge, atau reward palsu.
+- Jangan menambahkan dependency besar jika CSS, SVG, atau aset lokal yang ada sudah cukup.
+- Jika aset Kibo belum tersedia dalam format yang bisa digunakan ulang, buat satu komponen ilustrasi Kibo yang reusable dengan CSS/SVG atau gunakan aset lokal yang sudah ada. Variasi ekspresi boleh dibuat melalui props tanpa mengganti desain dasar.
+- Hindari emoji sebagai pengganti permanen jika ilustrasi Kibo yang konsisten bisa dibuat.
+- Pastikan ilustrasi tidak menyebabkan layout shift, overflow, atau memperlambat halaman.
+- Pertahankan sidebar desktop, mode minimized, dan navigasi mobile.
+- Gunakan responsive layout, spacing, dan hierarchy yang konsisten.
+- Jangan menaruh ilustrasi besar pada setiap kartu. Gunakan variasi ukuran dan penempatan supaya halaman tidak ramai.
+- Jangan menghapus fitur atau perubahan existing yang belum di-commit.
+
+## 4. Urutan kerja
+1. Audit aset dan komponen yang ada.
+2. Buat atau rapikan satu komponen Kibo reusable.
+3. Terapkan Kibo dan ilustrasi secara bertahap ke seluruh halaman.
+4. Periksa perbedaan fungsi visual Progress dan Profile.
+5. Periksa responsive layout, termasuk sidebar minimized dan gameplay mobile.
+
+## 5. Verifikasi
+Jalankan frontend lint, production build, dan git diff --check pada file terkait. Laporkan file yang berubah, halaman yang sudah memakai Kibo, serta keterbatasan aset jika ada.
+
+Jangan commit atau push. Jangan mengubah backend atau database. Jangan mengklaim browser testing telah dilakukan jika belum.
+
+Finalisasi belum sepenuhnya selesai.
+
+Yang berhasil dilakukan:
+- Menambahkan komponen reusable [`Kibo.tsx`](E:/Lomba%20Hackathon/M-One%20Telkomsel%20Coding%20Competition%202026/eduverse-mone-2026/frontend/components/Kibo.tsx).
+- Menambahkan styling Kibo konsisten di [`globals.css`](E:/Lomba%20Hackathon/M-One%20Telkomsel%20Coding%20Competition%202026/eduverse-mone-2026/frontend/app/globals.css).
+- Menjaga backend, API, database, autentikasi, dan alur kuis tetap tidak berubah.
+- Lint berhasil.
+- Production build berhasil.
+- Tidak melakukan browser testing.
+- Tidak commit/push.
+
+Catatan penting: integrasi komponen reusable ke seluruh halaman belum terselesaikan; halaman masih memakai implementasi Kibo lama atau avatar “K” di beberapa area. `git diff --check` juga menemukan trailing whitespace lama di `docs/prompt-log.md`, bukan dari perubahan UI ini.

@@ -18,9 +18,64 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+@keyframes eduverse-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes eduverse-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+main { animation: eduverse-enter .32s ease-out both; }
+button, a { transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease, border-color .16s ease; }
+button:not(:disabled):hover, a:hover { transform: translateY(-1px); }
+.kibo { animation: eduverse-float 3.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+
+/* Login and register use a focused email/password flow, without an unavailable social provider. */
+main:has(input[name="password"]) button:has(span.bg-\[\#4285f4\]),
+main:has(input[name="password"]) .my-5.flex.items-center.gap-3.text-xs.font-bold.text-\[\#91a3b6\] { display: none; }
+
 * {
   box-sizing: border-box;
 }
+
+.sidebar-icon { display: grid; width: 28px; height: 28px; flex: none; place-items: center; border-radius: 10px; background: #eef8f7; color: #26858b; }
+.sidebar-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+@media (min-width: 768px) {
+  aside button[aria-label="Perbesar sidebar"], aside button[aria-label="Perkecil sidebar"] { position: relative; color: transparent; border-color: #17345d; background: #ffce4a; box-shadow: 0 3px 0 #d98b1d; }
+  aside button[aria-label="Perbesar sidebar"]::before, aside button[aria-label="Perkecil sidebar"]::before { content: "☰"; position: absolute; inset: 0; display: grid; place-items: center; color: #17345d; font-size: 15px; line-height: 1; }
+  aside.md\:w-\[82px\] .kibo { transform: scale(.58); transform-origin: center; }
+  aside.md\:w-\[82px\] .kibo-badge { display: none; }
+  aside.md\:w-\[82px\] > div:nth-of-type(2) > a { display: none; }
+  aside.md\:w-\[82px\] > div:nth-of-type(2) > button { position: absolute; right: 2px; top: 2px; z-index: 2; width: 42px; height: 42px; border-width: 2px; border-radius: 12px; background: #ffce4a; font-size: 16px; }
+  aside.md\:w-\[82px\] > div:nth-of-type(2) > a > span:first-child { width: 42px; height: 42px; overflow: hidden; }
+  aside.md\:w-\[82px\] > a:last-child { min-height: 52px; padding: 6px; }
+}
+
+/* Quest surfaces: a lighter mission-briefing rhythm keeps the activity itself in focus. */
+main:has(a[href*="/play"]) > div > section:first-of-type { position: relative; min-height: 245px; padding-right: 28%; background: linear-gradient(125deg, #ffcf58 0 68%, #ffe7a0 68%); box-shadow: 5px 5px 0 #17345d; }
+main:has(a[href*="/play"]) > div > section:first-of-type::after { content: "✦"; position: absolute; right: 10%; bottom: 18%; display: grid; place-items: center; width: 72px; height: 72px; border: 3px solid #17345d; border-radius: 50%; background: #8fd9d1; color: #17345d; font-size: 30px; }
+main:has(span.rounded-full.border-2.bg-white\/75) > div > section:first-of-type { position: relative; min-height: 245px; padding-right: 28%; background: linear-gradient(125deg, #ffcf58 0 68%, #ffe7a0 68%); box-shadow: 5px 5px 0 #17345d; }
+main:has(span.rounded-full.border-2.bg-white\/75) > div > section:first-of-type::after { content: "✦"; position: absolute; right: 10%; bottom: 18%; display: grid; place-items: center; width: 72px; height: 72px; border: 3px solid #17345d; border-radius: 50%; background: #8fd9d1; color: #17345d; font-size: 30px; }
+main:has(a[href*="/play"]) > div > section:nth-of-type(2) { border-color: #c8e0df; box-shadow: 4px 4px 0 #a9d9d5; }
+main:has([aria-label="Avatar Kibo"]) { background-image: radial-gradient(#dceceb 1px, transparent 1px); background-size: 22px 22px; }
+main:has([aria-label="Avatar Kibo"]) section { box-shadow: 4px 4px 0 #17345d; }
+main:has([aria-label="Avatar Kibo"]) section:first-of-type { border-radius: 28px; }
+main:has([aria-label="Avatar Kibo"]) section button:not(:disabled) { transition: transform .15s ease, background-color .15s ease; }
+main:has([aria-label="Avatar Kibo"]) section button:not(:disabled):hover { transform: translateX(4px); }
+
+.kibo { position: relative; display: inline-block; flex: none; }
+.kibo-aura { position: absolute; inset: 12%; border-radius: 50%; background: #ffdc78; opacity: .65; filter: blur(18px); }
+.kibo-body { position: absolute; left: 12%; top: 25%; width: 76%; height: 63%; border: clamp(3px, 4%, 9px) solid #17345d; border-radius: 48% 48% 40% 40%; background: #8fd9d1; box-shadow: 0 9px 0 #4ba9ad; }
+.kibo-antenna { position: absolute; left: 50%; top: 1%; width: 5%; height: 19%; transform: translateX(-50%); border-radius: 99px; background: #17345d; }
+.kibo-spark { position: absolute; left: 50%; top: 0; display: grid; place-items: center; width: 22%; aspect-ratio: 1; transform: translate(-50%, -15%); border: 3px solid #17345d; border-radius: 50%; background: #ffce4a; color: #17345d; font-size: 45%; font-weight: 900; }
+.kibo-eye { position: absolute; top: 37%; width: 10%; aspect-ratio: 1; border-radius: 50%; background: #17345d; }
+.kibo-eye-left { left: 16%; } .kibo-eye-right { right: 16%; }
+.kibo-mouth { position: absolute; left: 50%; top: 50%; width: 25%; height: 18%; transform: translateX(-50%); border-bottom: 3px solid #17345d; border-radius: 0 0 99px 99px; }
+.kibo-arm { position: absolute; top: 42%; width: 14%; height: 32%; border: clamp(3px, 4%, 8px) solid #17345d; border-radius: 99px; background: #ffb86b; }
+.kibo-arm-left { left: 0%; transform: rotate(22deg); } .kibo-arm-right { right: 0%; transform: rotate(-22deg); }
+.kibo-badge { position: absolute; right: -12%; bottom: -9%; padding: 5% 8%; transform: rotate(7deg); border: clamp(2px, 2%, 4px) solid #17345d; border-radius: 18%; background: #fff; color: #17345d; font-size: 20%; font-weight: 900; white-space: nowrap; box-shadow: 0 3px 0 #17345d; }
+.kibo-thinking .kibo-mouth { width: 18%; border-radius: 99px; } .kibo-celebrate { transform: rotate(-3deg); }
+
+/* Legacy compact panels now inherit the Kibo silhouette instead of rendering a letter avatar. */
+[aria-label="Avatar Kibo"] { position: relative; overflow: visible; color: transparent !important; background: #8fd9d1 !important; border-radius: 48% 48% 40% 40% !important; box-shadow: 0 5px 0 #4ba9ad !important; }
+[aria-label="Avatar Kibo"]::before { content: ""; position: absolute; left: 18%; top: 32%; width: 14%; aspect-ratio: 1; border-radius: 50%; background: #17345d; box-shadow: 270% 0 0 #17345d; }
+[aria-label="Avatar Kibo"]::after { content: "✦"; position: absolute; left: 50%; top: -38%; display: grid; place-items: center; width: 38%; aspect-ratio: 1; transform: translateX(-50%); border: 3px solid #17345d; border-radius: 50%; background: #ffce4a; color: #17345d; font-size: 60%; }
 
 .hero-grid {
   background: radial-gradient(circle at 80% 20%, rgba(255, 221, 129, 0.5), transparent 28%), linear-gradient(135deg, #eaf9f8 0%, #f7fbff 58%, #fff6dc 100%);

@@ -36,7 +36,8 @@ export default function LoginPage() {
     const form = new FormData(event.currentTarget);
     const { error: authError } = await supabase.auth.signInWithPassword({ email: String(form.get("email") ?? "").trim(), password: String(form.get("password") ?? "") });
     if (authError) { setError("Email atau password tidak valid."); return; }
-    router.push("/dashboard");
+    const redirect = new URLSearchParams(window.location.search).get("redirect");
+    router.push(redirect?.startsWith("/") && !redirect.startsWith("//") ? redirect : "/dashboard");
   }
 
   return (
