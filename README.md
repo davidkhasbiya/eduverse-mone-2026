@@ -5,8 +5,9 @@
 Rather than presenting mathematics as a series of ordinary exercises, EduVerse turns learning into an adventure where students can answer questions, earn experience points (XP), and review their learning attempts.
 
 ## Preview
+<img width="1380" height="774" alt="image" src="https://github.com/user-attachments/assets/9a775432-4c13-47fe-b4ea-e7daaa48d19e" />
 
-**Link:** 
+**Link:** https://eduverseadventure.vercel.app/
 
 ## Features
 
